@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <link rel="shortcut icon" href="/image/favicon.ico" />
+    
+    <title>{% block title %}DnA by NetBooster Management & Reports{% endblock %}</title>
+    
+    <!-- CSS -->
+    <link href="/css/reset.css" rel="stylesheet" media="all">
+	<link href="css/styles.css" rel="stylesheet" media="all">
+	<link href="css/styles_print.css" rel="stylesheet" media="print">
+	<link href="/css/jquery-ui.structure.min.css" rel="stylesheet" media="all">
+	<link href="/css/jquery-ui.theme.min.css" rel="stylesheet" media="all">
+    <link href="http://www.highcharts.com/media/com_demo/highslide.css" rel="all" />
+    
+    <!-- css3-mediaqueries.js for IE8 or older -->
+    <script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+    
+    <!--[if lte IE 8]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]--></head>
+    {% endblock %}
+
+
+<body>
+	{% block menu %}
+    <header>
+    	<h1 id="logo" class="left"><img src="/image/logo-PSA.jpg" alt="PSA PEUGEOT CITROEN"/></h1>
+        <button id="prnt">Print report</button>
+    </header>
+	{% endblock %} 
+
+    <div id="main">
+    	{% block dateDash %}
+        <section id="dat">
+            <article class="w100 txtcenter">
+                <span id="dealer">{{ dealer }}</span>
+                <span> DASHBOARD</span>
+            </article>
+    		
+            <div class="center bord">
+            	<div class="input-daterange input-group datepicker" id="datepicker">
+                    <article class="w43 left pa0">
+                    	{% if startDate == '31daysAgo' %}
+                        <span id="date_debut">
+                            <script language="Javascript">
+                            var maintenant=new Date();
+                            maintenant.setDate (maintenant.getDate() - 31);
+                            var jour=maintenant.getDate();
+                            var mois=maintenant.getMonth()+1;
+                            var an=maintenant.getFullYear();
+                            if (jour<10) {jour="0"+jour};
+                            if (mois<10) {mois="0"+mois};
+                            document.write('<input type="date" name="start" id="datepickerStart" value="',an,'-',mois,'-',jour,'" placeholder="YYYY-MM-DD" />');
+                            </script>
+                        </span>
+                        {% else %}
+                            <span id="date_debut"><input type="date" name="start" id="datepickerStart" value="{{ startDate }}" placeholder="YYYY-MM-DD" /></span>
+                        {% endif %}
+                        <label for="datepickerStart" class="titreD"><img src="image/calendar.png" class="left"><strong>START DATE</strong></label>
+                    </article>
+            
+                    <article class="w43 left pa0">
+                        {% if endDate == 'yesterday' %}
+                            <span id="date_fin"><script language="Javascript">
+                            var maintenant=new Date();
+                            var jour=maintenant.getDate();
+                            var mois=maintenant.getMonth()+1;
+                            var an=maintenant.getFullYear();
+                            if (jour<10) {jour="0"+jour};
+                            if (mois<10) {mois="0"+mois};
+                            document.write('<input type="date" name="end" id="datepickerEnd" value="',an,'-',mois,'-',jour,'" placeholder="YYYY-MM-DD" />');
+                            </script></span>
+                        {% else %}
+                            <span id="date_fin"><input type="date" name="end" id="datepickerEnd" value="{{ endDate }}" placeholder="YYYY-MM-DD" /></span> 
+                        {% endif %}
+                        <label for="datepickerEnd" class="titreD"><img src="image/calendar.png" class="left"><strong>END DATE</strong></label>
+                    </article>
+                </div>
+                <article class="w14 right btnGo">
+                    <button type="button" id="GO">Apply</button>
+                </article>
+                <div class="clear"></div>
+            </div>
+        </section>
+        <div class="clear"></div>
+    	{% endblock %}
+        
+<!-- Main jumbotron for a primary marketing message or call to action -->
+        <div id="jumbotron">
+        {% block jumbotron %}
+        {% endblock %}
+        </div>
+
+        <div id="content">
+        {% block content %}
+        {% endblock %} 
+        </div>
+    </div>
+</body>
+</html>

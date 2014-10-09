@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block jumbotron %}
+    {% if has_credentials %}
+        <section id="s1"> <!--  test -->
+            <article class="page_visite">
+                <p class="timer" data-from="0" data-to={{ visites_item }} data-speed="2000" data-refresh-interval="20">{{ visites_item }}</p>
+                <p class="legend"><img src="image/visits.png" /> Visits</p>
+            </article>
+    
+            <article class="visitors">
+                <p class="timer" data-from="0" data-to={{ visitors_item }} data-speed="2000" data-refresh-interval="20">{{ visitors_item }}</p>
+                <p class="legend"><img src="image/visitors.png" /> Visitors</p>
+            </article>
+    
+            <article class="page_sessions">
+                <p class="timer" data-from="0" data-to={{ item_page_visite }} data-speed="2000" data-refresh-interval="20">{{ item_page_visite }}</p>
+                <p class="legend"><img src="image/pages.png" /> Pages/session</p>
+            </article>
+    
+            <article class="bounce">
+                    <p><span class="timer" data-from="0" data-to={{ item_bounce }} data-speed="2000" data-refresh-interval="20">{{ item_bounce }}</span>%</p>
+                    <p class="legend"><img src="image/bounce_rate.png" /> Bounce&nbsp;Rate</p>
+            </article>
+    
+            <article class="new_visitors">
+                <p><span class="timer" data-from="0" data-to={{ item_new_visitors }} data-speed="2000" data-refresh-interval="20">{{ item_new_visitors }}</span>%</p>
+                <p class="legend"><img src="image/new_visitors.png" /> New&nbsp;visitors</p>
+            </article>
+    
+            <article class="hot_leads">
+                <p class="timer" data-from="0" data-to={{ item_hot_lead }} data-speed="2000" data-refresh-interval="20">{{ item_hot_lead }}</p>
+                <p class="legend"><img src="image/hot_leads.png" /> Hot&nbsp;Leads</p>
+            </article>
+        </section>
+    {% else %}
+        <p>You are almost there, for the final step follow the link below and grant this application permission to access your data using the Google Analytics API.</p>
+        <blockquote>
+          <a href="{{ url }}">{{ url }}</a>
+        </blockquote>
+    {% endif %}
+{% endblock %}
+
+
+
+{% block content %}
+		<button id="authorize-button" class="desktop-hidden">Authorize Analytics</button>
+{% if has_credentials %}
+    <section id="s2" class="w90 center">
+    	<div id="c1">
+            <article id="line" class="w100"></article>
+		</div>
+		<div class="clear"></div>
+        
+        <div id="c2">
+            <article id="pie" class="w48 left"></article>
+        </div>
+        <div id="c3">
+        <article id="pie_legend" class="w48 right"></article>
+		</div>
+        
+		<div class="clear"></div>
+        
+        <article class="myTable w100">
+        	<table id="tableau" >
+                <caption>Visits, visitors, ATS and bounce rate by medium</caption>
+                <tr>
+                    <th>Medium</th>
+                    <th>Visits</th>
+                    <th>Visitors</th>
+                    <th>Average Time Spend on Site</th>
+                    <th>Bounce Rate</th>
+                </tr>
+            </table>
+        </article>
+
+		<div class="clear"></div>
+        <div id="c4">
+        	<article id="bar" class="w100"></article>
+		</div>
+		<div class="clear"></div>
+
+        <article class="myTable w48 left">
+        	<table id="tableau_page_vue" >
+                <caption>Top 20 pages viewed</caption>
+                <tr>
+                    <th>Pages</th>
+                    <th>Views</th>
+                </tr>
+            </table>
+        </article>
+        
+        <article class="myTable w48 right">
+        	<table id="tableau_event" >
+                <caption>Rate of clicks on banner by pages</caption>
+                <tr>
+                    <th>Pages</th>
+                    <th>Events</th>
+                    <th>Rate</th>
+                </tr>
+            </table>
+        </article>
+
+		<div class="clear"></div>
+        
+        <article class="myTable w100">
+        	<table id="tableau_model" >
+                <caption>Top 20 vehicle models viewed</caption>
+                <tr>
+                    <th>Vehicle Models</th>
+                    <th>Views</th>
+                </tr>
+            </table>
+        </article>
+    </section>
+
+    <!--<div>{{ liste_banners_home_valeur_page_table }}</div>-->
+    <!--<div>{{ liste_page_home_valeur_page_table }}</div>-->
+    <!--<div>{{ liste_banners_home_valeur_event_table }}</div>-->
+    <!--<div>{{ liste_page_home_valeur_event_table }}</div>-->
+    <!--<div>{{ rate }}</div>--> 
+
+{% endif %}
+
+<hr class="w90 center mt3 mb1" color="#DEDEDE" />
+
+<footer class="w90 center pa2 pt0">
+    <span>&copy; DnA by NetBooster</span>
+    <span id="HC">&copy; Highcharts.com</span>
+</footer>
+
+    
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="//code.jquery.com/jquery.js"></script>
+<script src="//cdn.datatables.net/1.10.0/css/jquery.dataTables.css"></script>
+<script src="//cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
+<script src="/js/jquery.countTo.js"></script>
+<script src="https://www.google.com/jsapi"></script>
+<script src="/js/gadash-1.0.js"></script>
+<script src="https://apis.google.com/js/client.js?onload=gadashInit"></script>
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/highcharts-more.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script src="http://code.highcharts.com/modules/data.js"></script>
+<script src="http://www.highcharts.com/media/com_demo/highslide-full.min.js"></script>
+<script src="http://www.highcharts.com/media/com_demo/highslide.config.js" charset="utf-8"></script>
+<script src="/js/jquery-ui.min.js"></script>
+
+<script>
+var tableau = document.getElementById("tableau");
+for(var i = 0; i < {{ liste_visit_medium_valeur_test1|safe }}.length; i++) {
+    var ligne = tableau.insertRow(-1);
+    var obj_i = {{ liste_visit_medium_valeur_test5|safe }}[i];
+    var colonne1 = ligne.insertCell(0);
+    colonne1.innerHTML += obj_i;
+    var obj_j = {{ liste_visit_medium_valeur_test4|safe }}[i];
+    var colonne2 = ligne.insertCell(0);
+    colonne2.innerHTML += obj_j;
+    var obj_k = {{ liste_visit_medium_valeur_test3|safe }}[i];
+    var colonne3 = ligne.insertCell(0);
+    colonne3.innerHTML += obj_k;
+    var obj_l = {{ liste_visit_medium_valeur_test2|safe }}[i];
+    var colonne4 = ligne.insertCell(0);
+    colonne4.innerHTML += obj_l;
+    var obj_m = {{ liste_visit_medium_valeur_test1|safe }}[i];
+    var colonne5 = ligne.insertCell(0);
+    colonne5.innerHTML += obj_m;
+}
+
+var arrayLignes = document.getElementById("tableau").rows; //on récupère les lignes du tableau
+var longueur = arrayLignes.length;//on peut donc appliquer la propriété length
+arrayLignes[0].style.backgroundColor = "#003890";
+var i=1; //on définit un incrémenteur qui représentera la clé
+while(i<longueur)
+{
+	if(i % 2 == 0)//si la clé est paire
+	{
+		arrayLignes[i].style.backgroundColor = "#DEDEDE";
+	}
+	else //elle est impaire
+	{
+		arrayLignes[i].style.backgroundColor = "#ffffff";
+	}
+	i++;
+}
+</script>
+<script>
+var tableau = document.getElementById("tableau_page_vue");
+var length_table = 20;
+if({{ liste_top20_pagevuew_valeur_page_view_table|safe }}.length > 20 )
+	{var length_table = 20 ;}
+	else
+	{var length_table = {{ liste_top20_pagevuew_valeur_page_view_table|safe }}.length ;};
+for(var i = 0; i < length_table; i++) {
+    var ligne = tableau.insertRow(-1);
+    var obj_l = {{ liste_top20_pagevuew_valeur_page_view_table|safe }}[i];
+    var colonne2 = ligne.insertCell(0);
+    colonne2.innerHTML += obj_l;
+    var obj_m = {{ liste_top20_pagevuew_valeur_page_title_table|safe }}[i];
+    var colonne1 = ligne.insertCell(0);
+    colonne1.innerHTML += obj_m;
+}
+
+var arrayLignes = document.getElementById("tableau_page_vue").rows; //on récupère les lignes du tableau
+var longueur = arrayLignes.length;//on peut donc appliquer la propriété length
+arrayLignes[0].style.backgroundColor = "#003890";
+var i=1; //on définit un incrémenteur qui représentera la clé
+while(i<longueur)
+{
+	if(i % 2 == 0)//si la clé est paire
+	{
+		arrayLignes[i].style.backgroundColor = "#DEDEDE";
+	}
+	else //elle est impaire
+	{
+		arrayLignes[i].style.backgroundColor = "#ffffff";
+	}
+	i++;
+}
+</script>
+<script>
+var tableau = document.getElementById("tableau_model");
+var length_table = 20;
+if({{ liste_top20_model_valeur_model_table|safe }}.length > 20 )
+	{var length_table = 20 ;}
+	else
+	{var length_table = {{ liste_top20_model_valeur_model_table|safe }}.length ;};
+for(var i = 0; i < length_table; i++) {
+    var ligne = tableau.insertRow(-1);
+    var obj_l = {{ liste_top20_model_valeur_page_view_table|safe }}[i];
+    var colonne2 = ligne.insertCell(0);
+    colonne2.innerHTML += obj_l;
+    var obj_m = {{ liste_top20_model_valeur_model_table|safe }}[i];
+    var colonne1 = ligne.insertCell(0);
+    colonne1.innerHTML += obj_m;
+}
+
+var arrayLignes = document.getElementById("tableau_model").rows; //on récupère les lignes du tableau
+var longueur = arrayLignes.length;//on peut donc appliquer la propriété length
+arrayLignes[0].style.backgroundColor = "#003890";
+var i=1; //on définit un incrémenteur qui représentera la clé
+while(i<longueur)
+{
+	if(i % 2 == 0)//si la clé est paire
+	{
+		arrayLignes[i].style.backgroundColor = "#DEDEDE";
+	}
+	else //elle est impaire
+	{
+		arrayLignes[i].style.backgroundColor = "#ffffff";
+	}
+	i++;
+}
+</script>
+<script>
+var tableau = document.getElementById("tableau_event");
+if({{ liste_top20_model_valeur_model_table|safe }}.length > 20 )
+	{var length_table = 20 ;}
+	else
+	{var length_table = {{ liste_banners_home_valeur_page_table|safe }}.length ;};
+for(var i = 0; i < length_table; i++) {
+    var ligne = tableau.insertRow(-1);
+    var obj_k = {{ rate|safe }}[i]+"%";
+    var colonne3 = ligne.insertCell(0);
+    colonne3.innerHTML += obj_k;
+    var obj_l = {{ liste_banners_home_valeur_event_table|safe }}[i];
+    var colonne2 = ligne.insertCell(0);
+    colonne2.innerHTML += obj_l;
+    var obj_m = {{ liste_banners_home_valeur_page_table|safe }}[i];
+    var colonne1 = ligne.insertCell(0);
+    colonne1.innerHTML += obj_m;
+}
+
+var arrayLignes = document.getElementById("tableau_event").rows; //on récupère les lignes du tableau
+var longueur = arrayLignes.length;//on peut donc appliquer la propriété length
+arrayLignes[0].style.backgroundColor = "#003890";
+var i=1; //on définit un incrémenteur qui représentera la clé
+while(i<longueur)
+{
+	if(i % 2 == 0)//si la clé est paire
+	{
+		arrayLignes[i].style.backgroundColor = "#DEDEDE";
+	}
+	else //elle est impaire
+	{
+		arrayLignes[i].style.backgroundColor = "#ffffff";
+	}
+	i++;
+}
+</script>
+<script>
+$(function () {
+	$('#line').highcharts({
+		chart: {
+		type: 'spline'
+		},
+		title: {
+			text: 'Visits and visitors',
+			x: -20, //center
+			y: 22
+		},
+		subtitle: {
+			text: 'Source: Google Analytics',
+			x: -20,
+			y: 45
+		},
+		xAxis: {
+			labels: {
+				rotation: -45},
+			categories: {{ date|safe }}
+		},
+		yAxis: {
+			title: {
+				text: 'Visits & visitors'
+			},
+			plotLines: [{
+				value: 0,
+				width: 1,
+				color: '#808080'
+			}]
+		},
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0
+		},
+		credits: {
+			enabled: false
+		},
+		series: [{
+			name: 'Visits',
+			color: '#ef4339',
+			data: {{ visites|safe }}
+		},{
+			name: 'Visitors',
+			color: '#2859a6',
+			data: {{ visiteurs|safe }}
+		}]
+	});
+});
+</script>
+<script>
+$(function() {
+    $('#pie').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: 'Visits by medium',
+			y: 22
+        },
+        subtitle: {
+            text: 'Source: Google Analytics',
+			y: 45
+        },
+        tooltip: {
+    	    pointFormat: '{series.name}: <b>{point.y:,.0f}</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            type: 'pie',
+            name: 'Visits per medium',
+            data: {{ liste_visites_medium_pie|safe }}
+        }]
+    });
+});
+</script>
+<script>
+$(function() {
+    $('#pie_legend').highcharts({
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: 'Visits by browser',
+			y: 22
+        },
+        subtitle: {
+            text: 'Source: Google Analytics',
+			y: 45
+        },
+        tooltip: {
+    	    pointFormat: '{series.name}: <b>{point.y:,.0f}</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            type: 'pie',
+            name: 'Visits per browser',
+            data: {{ liste_visit_browser_valeur_bar|safe }}
+        }]
+    });
+});
+</script>
+<script>
+$(function () {
+	$('#bar').highcharts({
+		chart: {
+			type: 'bar'
+		},
+		title: {
+			text: 'Visits by device',
+			y: 22
+		},
+		subtitle: {
+			text: 'Source: Google Analytics',
+			y: 45
+		},
+		xAxis: {
+			categories: {{ liste_visit_device_valeur_device_json|safe }},
+			title: {
+				text: null
+			}
+		},
+		plotOptions: {
+			bar: {
+				dataLabels: {
+					enabled: true
+				}
+			}
+		},
+		legend: {
+			enabled: false
+		},
+		credits: {
+			enabled: false
+		},
+	series: [{
+		type: 'bar',
+		name: 'Visits per device',
+		color: '#5982c2',
+		data: {{ liste_visit_device_valeur_pie|safe }}
+	}]
+	});
+});
+</script>
+<script>
+$(function() {
+    $("#GO").click(function(event) {
+		event.preventDefault();
+		var dateStartCal = $( "#datepickerStart" ).datepicker("getDate" ), 
+			dayStart = dateStartCal.getDate(),
+			monthStart = dateStartCal.getMonth()+1,
+			yearStart = dateStartCal.getFullYear();
+		var dateEndCal = $( "#datepickerEnd" ).datepicker("getDate" ), 
+			dayEnd = dateEndCal.getDate(),
+			monthEnd = dateEndCal.getMonth()+1,
+			yearEnd = dateEndCal.getFullYear();
+		if (dayStart<10) {dayStart="0"+dayStart};
+		if (dayEnd<10) {dayEnd="0"+dayEnd};
+		if (monthStart<10) {monthStart="0"+monthStart};
+		if (monthEnd<10) {monthEnd="0"+monthEnd};
+		var URL = "http://psadealer.appspot.com/dashboard?dateStart="+yearStart+"-"+monthStart+"-"+dayStart+"&dateEnd="+yearEnd+"-"+monthEnd+"-"+dayEnd
+		window.location.replace(URL);
+	});
+});
+</script>
+<script>
+    $(function() {
+        $( "#datepickerStart" ).datepicker({
+            defaultDate: "+1w",
+            changeMonth: true,
+            numberOfMonths: 1,
+            maxDate: "0",
+            dateFormat: 'yy-mm-dd',
+            onClose: function( selectedDate ) {
+                $( "#datepickerEnd" ).datepicker( "option", "minDate", selectedDate );
+            }
+        });
+        $( "#datepickerEnd" ).datepicker({
+            defaultDate: "+1w",
+            changeMonth: true,
+            numberOfMonths: 1,
+            maxDate: "0",
+            dateFormat: 'yy-mm-dd',
+            onClose: function( selectedDate ) {
+                $( "#datepickerStart" ).datepicker( "option", "maxDate", selectedDate );
+            }
+        });
+		
+		$('.timer').countTo();
+		
+		//window.onbeforeprint = wresize;
+		
+		
+		var p = 0,
+			c1w = $('#line').width(),
+			c2w = $('#pie').width(),
+			c3w = $('#pie_legend').width(),
+			c4w = $('#bar').width();
+
+		function wresize(){
+			c1w = $('#line').width();
+			c2w = $('#pie').width();
+			c3w = $('#pie_legend').width();
+			c4w = $('#bar').width();
+			
+			var chart1 = $('#line').highcharts(), chart2 = $('#pie').highcharts(), chart3 = $('#pie_legend').highcharts(), chart4 = $('#bar').highcharts();
+			
+			chart1.setSize(666);
+			chart2.setSize(666);
+			chart3.setSize(666);
+			chart4.setSize(666);
+			p=1;
+		}
+		
+		function wresizeOrigin(){
+			var chart1 = $('#line').highcharts(), chart2 = $('#pie').highcharts(), chart3 = $('#pie_legend').highcharts(), chart4 = $('#bar').highcharts();
+			chart1.setSize(c1w);
+			chart2.setSize(c2w);
+			chart3.setSize(c3w);
+			chart4.setSize(c4w);
+		}
+		
+		$(window).resize(function(){
+			if(p == 1){
+				c1w = $('#line').width();
+				c2w = $('#pie').width();
+				c3w = $('#pie_legend').width();
+				c4w = $('#bar').width();
+	
+				wresizeOrigin();
+			}
+		});
+
+/*
+72 dpi (web) = 595 X 842 pixels
+300 dpi (print) = 2480 X 3508 pixels (This is "A4" as I know it, i.e. "210mm X 297mm @ 300 dpi")
+600 dpi (print) = 4960 X 7016 pixels
+*/
+		$('#prnt').click(function () {
+			wresize();
+			setTimeout(window.print, 260);
+		});
+
+		window.onafterprint = wresizeOrigin;
+    });
+</script>
+{% endblock %}

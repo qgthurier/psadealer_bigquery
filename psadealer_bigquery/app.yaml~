@@ -1,0 +1,34 @@
+application: psadealer
+version: 6
+runtime: python27
+threadsafe: true
+api_version: 1
+
+builtins:
+- remote_api: on
+
+handlers:
+- url: /image
+  static_dir: image
+
+- url: /css
+  static_dir: css
+
+- url: /js
+  static_dir: js
+
+- url: /fonts
+  static_dir: fonts
+
+- url: /.*
+  script: dashboard_test_bigquery.app
+
+- url: /users
+  static_dir: users
+  application_readable: true
+
+libraries:
+- name: jinja2
+  version: "latest"
+- name: webapp2
+  version: "latest"
