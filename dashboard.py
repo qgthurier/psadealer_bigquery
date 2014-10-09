@@ -56,13 +56,15 @@ class Dashboard(webapp2.RequestHandler):
         get = cgi.FieldStorage()
         try:
           dealer = get['dealer'].value
+          time_out = get['time_out'].value
         except:
           dealer = 'ajaccio'
+          time_out = 100
       
         user = users.get_current_user()
         if user: # if the user is already logged in we display the proper menu     
             get = cgi.FieldStorage()
-            bq = bqclient.BigQueryClient(decorator)
+            bq = bqclient.BigQueryClient(decorator, time_out)
             
             try:
               startDate = get['dateStart'].value
