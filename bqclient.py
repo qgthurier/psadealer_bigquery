@@ -29,7 +29,7 @@ class BigQueryClient(object):
         else:
             return None
 
-    def Query(self, query, project, timeout_ms=10000):
+    def Query(self, query, project, timeout_ms=1000):
         query_config = {
             'query': query,
             'timeoutMs': timeout_ms
