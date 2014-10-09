@@ -107,7 +107,7 @@ class Dashboard(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication(
     [
-     ('/dashboard', MainHandler),
+     ('/', Dashboard),
      (decorator.callback_path, decorator.callback_handler()),
     ],
     debug=True)
