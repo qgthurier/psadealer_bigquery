@@ -1,0 +1,117 @@
+@charset "utf-8";
+
+body{ min-width:300px; }
+
+a{ color:#757575; text-decoration:none; }
+a:hover{ color:#2b2b2b; }
+*{ outline:none; }
+
+.w14 { width: 14%; }
+.w43 { width: 43%; }
+.w48 { width: 48%; }
+
+/* Header */
+header{ width:100%; background:#FFFFFF; position:fixed; z-index:9999999; height:62px; margin:0; margin-bottom:70px; padding:0; border-bottom:3px solid #DDD; }
+header h1{ margin:0; padding:0 14px; line-height:0; }
+header #prnt{ width:62px; height:59px; overflow:hidden; float:right; margin:0; padding:2px; background:#bdc3c7; color:#FFF; border:0 none; text-transform:uppercase; font-weight:bold; font-size:0.8em; }
+header #prnt:hover{ background:#7f8c8d; }
+
+#dat article{ margin:14px auto; padding:14px; }
+#dat article.w43{ background:#fafdfe; }
+#dat .bord{ width:550px; margin-bottom:45px; border:1px solid #DDD; cursor:pointer; background:#fafdfe; }
+#dat .bord article{ margin:0; position:relative; }
+#dat .bord article img.left{ margin-right:0.4em; }
+#dat .bord article strong{ margin-top:-1px; float:left; }
+#dat .bord article span{ margin:0; padding:0; font-size:1em; width:100%; height:100%; position:absolute; z-index:1; }
+#dat article span{ color:#656768; font-size:2.6em; text-transform:uppercase; }
+#dat article span#dealer{ color:#ef4339; font-weight:bold; }
+#dat article:first-child span{ color:#2859a6; }
+#dat article .titreD{ position:relative; padding:14px; z-index:14; }
+#dat article input{ position:absolute; color:#AAA; font-size:1em; width:100%; height:5em; padding:28px 14px 0; margin:0; background:#fafdfe; border:0; z-index:4; }
+#dat article input:hover{ background:#f4f5f6; }
+#dat article input:focus{ background:#f0f1f2; }
+/*#dat article input{ color:#AAA; font-size:1em; width:70%; padding:0; margin:7px 0 0; background:none; border:0; }
+#dat article input:hover{ background:#f4f5f6; border:1px solid #DDD; padding:1px 5px; margin:3px 0 0; }
+#dat article input:focus{ background:#FFF; border:1px solid #DDD; padding:1px 5px; margin:3px 0 0; }
+*/
+
+#dat article.btnGo{ padding:0; }
+#dat article button{ background:#DDD; color:#777; width:100%; font-size:1em; line-height:5em; border:0; }
+#dat article button:hover{ background:#888; color:#FFF; }
+
+#main{ padding-top:70px; }
+
+#jumbotron{ margin:0; padding:0; }
+#s1{ position: relative; margin: 0 auto; overflow: hidden; width: 100%; border-top:1px solid #C5C5C5; border-bottom:1px solid #C5C5C5; }
+#s1 article{ float:left; width:16.66%; padding:26px 1%; margin:0; color:#2859a6; text-align:center; border-left:1px solid #DDD; background:#f4f5f6; }
+#s1 article:first-child{ border-left:1px solid #DDD; }
+#s1 article:hover{ background:#DEDEDE; color:#656768; }
+#s1 p{ margin: 0; padding: 0; }
+#s1 article .timer { font-size:3.2em; }
+#s1 article .legend { font-size:1.1em; text-transform:uppercase; }
+
+#content{ margin:0; padding:26px 0 0; }
+#s2{ position: relative; margin: 0 auto; }
+#s2 article{ background:#FFF; padding:0; margin:0 auto 26px; color:#555; text-align:center; border:1px solid #CCC; overflow:hidden; }
+#s2 article div.highcharts-container{ width:99.9% !important; height:99.9% !important; text-align:center !important; }
+
+.myTable { margin:0px; padding:0px; }
+.myTable caption{ font-size:1.2em; color:#373A36; line-height:30px; font-style:normal; margin:0; }
+.myTable table{ border-collapse: collapse; border-spacing: 0; border:1px solid #E7E8E9;  margin:0px;  padding:0px; }
+.myTable th{ vertical-align:middle; border:1px solid #E7E8E9; text-align:center; border-width:0px 0px 1px 1px; font-size:1.1em; padding:10px; font-weight:bold; color:#FFF; }
+.myTable td{ vertical-align:middle; border:1px solid #E7E8E9; border-width:0px 1px 1px 0px; text-align:center; padding:8px; font-size:0.9em; font-weight:normal; color:#777; }
+
+#HC{ margin-left: auto; float: right; }
+
+/* config for width > 1090px */
+@media (max-width: 1090px) { 
+	#s1 article .legend { font-size:1em; }
+}
+
+/* config for width > 1019px */
+@media (max-width: 1019px) { 
+	#s1 article .timer { font-size:2.6em; }
+	.legend img { display: block; margin: 0 auto; }
+	.w48 { float:none; clear:both; width:100%; }
+}
+
+/* config for width > 789px */
+@media (max-width: 789px) {
+	header #prnt{ display:none; }
+	#s1 article{ width:33.33%; }
+	.bounce{ clear:both; }
+	.bounce, .new_visitors, .hot_leads{ border-top:1px solid #ddd; }
+	#s1 article .legend { font-size:1.4em; }
+	.legend img { display: inline; }
+	
+	.ui-datepicker-calendar thead{ display:table-header-group; }
+	.ui-datepicker-calendar th, .ui-datepicker-calendar td { display: table-cell !important; text-align: center !important; width: inherit !important; }
+}
+
+/* config for width > 640px */
+@media (max-width: 640px) { 
+	#s1 article .timer { font-size:2.6em; }
+	#s1 article .legend { font-size:1em; }
+}
+
+/* config for width > 550px */
+@media (max-width: 570px) {
+	header h1{ margin:0 auto; padding:0; text-align:center; float:none !important; }
+	
+	.legend img { display: block; }
+
+	#dat .bord{ width:100%; }
+}
+/* config for width > 420px */
+@media (max-width: 420px) {
+	.w43 { width: 50%; }
+	#dat article.btnGo{ float:none; clear:both; width:100%; margin:75px 0 0; }
+	#dat article button{ font-size:1.3em; line-height:2em; }
+	
+	.legend img { display: inline; }
+	
+	#s1 article{ width:50%; }
+	.bounce{ clear:inherit; }
+	.page_sessions, .new_visitors{ clear:both; }
+	.page_sessions, .bounce, .new_visitors, .hot_leads{ border-top:1px solid #ddd; }
+}
