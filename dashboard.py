@@ -43,7 +43,8 @@ mem = memcache.Client()
 
 class Dashboard(webapp2.RequestHandler):
    
-    def _get_ga_data(self, bqdata):
+    def _get_ga_data(self, bqdata, metrics):
+        logging.info(metrics)
         logging.info(bqdata)
         out = bqdata["rows"][0]["f"][0]["v"]
         return out
@@ -74,20 +75,20 @@ class Dashboard(webapp2.RequestHandler):
                    "from %s "
                    "where trafficSource.medium = 'organic' "
                    "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)      
-            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID), "visits")  
             QUERY = ("select count(distinct(fullVisitorId)) as val,"
                    "from %s "
                    "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)    
-            visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID), "visitors")  
             QUERY = ("select avg(totals.pageviews) as val,"
                     "from %s "
                     "where trafficSource.medium = 'organic'"
                     "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)
-            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID), "pages")  
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
                    "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer) 
-            item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID), "bounce")  
             
               
             variables = {
