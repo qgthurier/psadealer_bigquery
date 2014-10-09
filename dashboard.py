@@ -50,7 +50,7 @@ class Dashboard(webapp2.RequestHandler):
    
     def _get_ga_data(self, bqdata):
         logging.info(bqdata)
-        out = bqdata["schema"]["fields"][0]["val"]
+        out = bqdata["rows"][0]["f"][0]["v"]
         return out
 
     @decorator.oauth_required
