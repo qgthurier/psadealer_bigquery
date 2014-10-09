@@ -3,13 +3,13 @@ import httplib2
 from apiclient.discovery import build
 
 # [START bqclient-init]
-class BigQueryClient(object, time_out):
+class BigQueryClient(object):
     def __init__(self, decorator):
         """Creates the BigQuery client connection"""
         decorated_http = decorator.http()      
         self.service = build('bigquery', 'v2', http=decorated_http)
         self.decorator = decorator
-        self.time_out = time_out
+
 # [STOP bqclient-init]
 
     # [START tabledata]
@@ -30,10 +30,10 @@ class BigQueryClient(object, time_out):
         else:
             return None
 
-    def Query(self, query, project):
+    def Query(self, query, project, timeout):
         query_config = {
             'query': query,
-            'timeoutMs': self.timeout,
+            'timeoutMs': timeout,
             'cacheHit': False
         }
         decorated_http = self.decorator.http()
