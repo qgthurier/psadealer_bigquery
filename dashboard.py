@@ -69,7 +69,6 @@ class Dashboard(webapp2.RequestHandler):
               startDate = '31daysAgo'
               endDate = 'yesterday'
             
-            """
             QUERY = ("select sum(totals.visits) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
@@ -105,8 +104,7 @@ class Dashboard(webapp2.RequestHandler):
     
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
-            """
-            self.response.write("hello world")
+            
 
         else: # if the user is not logged in yet, redirection to the google sign in form
            self.redirect(users.create_login_url("/"))
