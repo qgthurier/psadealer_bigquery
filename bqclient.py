@@ -32,7 +32,8 @@ class BigQueryClient(object):
     def Query(self, query, project, timeout_ms=100):
         query_config = {
             'query': query,
-            'timeoutMs': timeout_ms
+            'timeoutMs': timeout_ms,
+            'cacheHit': False
         }
         decorated_http = self.decorator.http()
         result_json = (self.service.jobs()
