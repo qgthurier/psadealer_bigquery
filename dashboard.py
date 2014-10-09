@@ -66,6 +66,7 @@ class Dashboard(webapp2.RequestHandler):
           startDate = '31daysAgo'
           endDate = 'yesterday'
         
+        """
         QUERY = ("select sum(totals.visits) as val,"
                "from %s "
                "where trafficSource.medium = 'organic' "
@@ -98,9 +99,11 @@ class Dashboard(webapp2.RequestHandler):
             'startDate':startDate,
             'endDate':endDate,
             }
-        
+
         template = JINJA_ENVIRONMENT.get_template('management.html')
         self.response.write(template.render(variables))
+        """
+        self.response.write("hello world")
 
 app = webapp2.WSGIApplication(
     [
