@@ -72,20 +72,20 @@ class Dashboard(webapp2.RequestHandler):
             QUERY = ("select sum(totals.visits) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)      
+                   "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)      
             visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
             QUERY = ("select count(distinct(fullVisitorId)) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)    
+                   "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)    
             visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
             QUERY = ("select avg(totals.pageviews) as val,"
                     "from %s "
                     "where trafficSource.medium = 'organic'"
-                    "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)
+                    "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)
             item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer) 
+                   "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer) 
             item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
             
               
