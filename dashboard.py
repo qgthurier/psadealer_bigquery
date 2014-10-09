@@ -56,55 +56,61 @@ class Dashboard(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
         global startDate, endDate, vue, dealer
-        get = cgi.FieldStorage()
-        bq = bqclient.BigQueryClient(decorator)
         
-        try:
-          startDate = get['dateStart'].value
-          endDate = get['dateEnd'].value
-        except:
-          startDate = '31daysAgo'
-          endDate = 'yesterday'
-        
-        """
-        QUERY = ("select sum(totals.visits) as val,"
-               "from %s "
-               "where trafficSource.medium = 'organic' "
-               "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)      
-        visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
-        QUERY = ("select count(distinct(fullVisitorId)) as val,"
-               "from %s "
-               "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)    
-        visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
-        QUERY = ("select avg(totals.pageviews) as val,"
-                "from %s "
-                "where trafficSource.medium = 'organic'"
-                "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)
-        item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
-        QUERY = ("select sum(totals.bounces)/count(*) as val,"
-               "from %s "
-               "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer) 
-        item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
-        
-          
-        variables = {
-            'url': decorator.authorize_url(),
-            'has_credentials': decorator.has_credentials(),
-            'get':get,
-            'visites_item': visites_item,
-            'visitors_item' : visitors_item,
-            'item_bounce':item_bounce,
-            'item_page_visite':item_page_visite,
-            'dealer':dealer,
-            'startDate':startDate,
-            'endDate':endDate,
-            }
+        user = users.get_current_user()
+        if user: # if the user is already logged in we display the proper menu     
+            get = cgi.FieldStorage()
+            bq = bqclient.BigQueryClient(decorator)
+            
+            try:
+              startDate = get['dateStart'].value
+              endDate = get['dateEnd'].value
+            except:
+              startDate = '31daysAgo'
+              endDate = 'yesterday'
+            
+            """
+            QUERY = ("select sum(totals.visits) as val,"
+                   "from %s "
+                   "where trafficSource.medium = 'organic' "
+                   "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)      
+            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            QUERY = ("select count(distinct(fullVisitorId)) as val,"
+                   "from %s "
+                   "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)    
+            visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            QUERY = ("select avg(totals.pageviews) as val,"
+                    "from %s "
+                    "where trafficSource.medium = 'organic'"
+                    "and lower(trafficSource.referralPath) contains %s ") % (FROM, dealer)
+            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            QUERY = ("select sum(totals.bounces)/count(*) as val,"
+                   "from %s "
+                   "WHERE lower(trafficSource.referralPath) contains %s ") % (FROM, dealer) 
+            item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID))  
+            
+              
+            variables = {
+                'url': decorator.authorize_url(),
+                'has_credentials': decorator.has_credentials(),
+                'get':get,
+                'visites_item': visites_item,
+                'visitors_item' : visitors_item,
+                'item_bounce':item_bounce,
+                'item_page_visite':item_page_visite,
+                'dealer':dealer,
+                'startDate':startDate,
+                'endDate':endDate,
+                }
+    
+            template = JINJA_ENVIRONMENT.get_template('management.html')
+            self.response.write(template.render(variables))
+            """
+            self.response.write("hello world")
 
-        template = JINJA_ENVIRONMENT.get_template('management.html')
-        self.response.write(template.render(variables))
-        """
-        self.response.write("hello world")
-
+        else: # if the user is not logged in yet, redirection to the google sign in form
+           self.redirect(users.create_login_url("/"))
+            
 app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
