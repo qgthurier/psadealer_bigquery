@@ -1,2 +1,0 @@
-#./google_appengine/appcfg.py download_data --url=http://localhost:8080/_ah/remote_api/ --filename=credentials.csv --kind=User --config_file=bulkloader.yaml
-#./google_appengine/appcfg.py upload_data --url=http://3.latest.psadealer.appspot.com/_ah/remote_api/ --filename=credentials.csv --kind=User --config_file=bulkloader.yaml
