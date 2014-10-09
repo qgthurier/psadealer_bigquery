@@ -18,12 +18,7 @@ from google.appengine.ext import ndb
 
 import webapp2
 import jinja2
-import cgi
-
-dealer = "ajaccio"
-startDate = ""
-endDate = ""
-vue = ""    
+import cgi 
         
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -57,6 +52,12 @@ class Dashboard(webapp2.RequestHandler):
     def get(self):
         global startDate, endDate, vue, dealer
         
+        get = cgi.FieldStorage()
+        try:
+          dealer = get['dealer'].value
+        except:
+          dealer = 'ajaccio'
+      
         user = users.get_current_user()
         if user: # if the user is already logged in we display the proper menu     
             get = cgi.FieldStorage()
