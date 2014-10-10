@@ -103,7 +103,10 @@ class Dashboard(webapp2.RequestHandler):
         if user: 
             
             get = cgi.FieldStorage()
-            bq = bqclient.BigQueryClient(decorator)
+            bq1 = bqclient.BigQueryClient(decorator)
+            bq2 = bqclient.BigQueryClient(decorator)
+            bq3 = bqclient.BigQueryClient(decorator)
+            bq4 = bqclient.BigQueryClient(decorator)
             
             if source == "tables":
                 FROM = ",".join(selected_tabs)
@@ -117,7 +120,7 @@ class Dashboard(webapp2.RequestHandler):
                    "where trafficSource.medium = 'organic' "
                    "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)      
-            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
+            visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
             if not visites_item:
                 visites_item = 0
             
@@ -126,7 +129,7 @@ class Dashboard(webapp2.RequestHandler):
                    "where trafficSource.medium = 'organic' "
                    "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)    
-            visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
+            visitors_item = self._get_ga_data(bq2.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
             if not visitors_item:
                 visitors_item = 0
             
@@ -135,14 +138,14 @@ class Dashboard(webapp2.RequestHandler):
                     "where trafficSource.medium = 'organic'"
                     "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)
-            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages") 
+            item_page_visite = self._get_ga_data(bq3.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages") 
              
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
                    "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)
-            item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
+            item_bounce = self._get_ga_data(bq4.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
               
             variables = {
                 'url': decorator.authorize_url(),
