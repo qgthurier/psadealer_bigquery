@@ -42,8 +42,8 @@ tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
 "[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
 "[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
 
-dates = [date.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
 
+datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
 mem = memcache.Client()
 
 class Dashboard(webapp2.RequestHandler):
@@ -77,18 +77,18 @@ class Dashboard(webapp2.RequestHandler):
           source = "tables"
         try:
           startDate_str = get['dateStart'].value
-          startDate = date.strptime(get['dateStart'].value, '%Y%m%d')
+          startDate = datetime.combine(date.strptime(startDate_str, '%Y%m%d'), datetime.min.time())
         except:
-          startDate = date.today() - timedelta(30)
+          startDate = datetime.combine(date.today() - timedelta(30), datetime.min.time())
           startDate_str = startDate.strftime('%Y%m%d')
         try:
           endDate_str = get['endDate'].value   
-          endDate = date.strptime(get['endDate'].value, '%Y%m%d')
+          endDate = datetime.combine(endDate_str, datetime.min.time())
         except:
-          endDate = date.today() - timedelta(1)
+          endDate =  datetime.combine(date.today() - timedelta(1), datetime.min.time())
           endDate_str = endDate.strftime('%Y%m%d')
-          
-        selected_tabs = [tables[i] for i, dt in enumerate(dates) if startDate <= dt <= endDate]   
+
+        selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if startDate <= dt <= endDate]   
         user = users.get_current_user()
         
         if user: 
