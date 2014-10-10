@@ -54,10 +54,10 @@ class Dashboard(webapp2.RequestHandler):
         logging.info(metrics)
         logging.info(bqdata)
         out = None
-        logging.info(bqdata['jobComplete'])
+        logging.info("job complete : " + str(bqdata['jobComplete']))
         if bqdata['jobComplete']:
             out = bqdata["rows"][0]["f"][0]["v"]
-        else:
+        elif not time_out_reached:
             time_out_reached = True
             self.response.write("at least one query reached the time out!")
         return out
@@ -156,12 +156,11 @@ class Dashboard(webapp2.RequestHandler):
                 'endDate':endDate,
                 }
             
-            logging.info(time_out_reached)
-            #if not time_out_reached:
-            template = JINJA_ENVIRONMENT.get_template('management.html')
-            self.response.write(template.render(variables))
-            #else:
-            #self.response.write("at least one query reached the time out!")
+            logging.info("time out reached : " + str(time_out_reached))
+            
+            if not time_out_reached:
+                template = JINJA_ENVIRONMENT.get_template('management.html')
+                self.response.write(template.render(variables))
 
         else: 
            self.redirect(users.create_login_url("/"))
