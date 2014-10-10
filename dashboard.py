@@ -45,13 +45,19 @@ tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
 
 datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
 mem = memcache.Client()
-
+time_out_reached = False
+        
 class Dashboard(webapp2.RequestHandler):
    
     def _get_ga_data(self, bqdata, metrics):
+        global time_out_reached
         logging.info(metrics)
         logging.info(bqdata)
-        out = bqdata["rows"][0]["f"][0]["v"]
+        out = None
+        if bqdata.jobReference.jobComplete:
+            out = bqdata["rows"][0]["f"][0]["v"]
+        else:
+            time_out_reached = True
         return out
 
     @decorator.oauth_required
@@ -141,12 +147,14 @@ class Dashboard(webapp2.RequestHandler):
                 'startDate':startDate,
                 'endDate':endDate,
                 }
-    
-            template = JINJA_ENVIRONMENT.get_template('management.html')
-            self.response.write(template.render(variables))
             
+            if not time_out_reached:
+                template = JINJA_ENVIRONMENT.get_template('management.html')
+                self.response.write(template.render(variables))
+            else:
+                self.response.write("at least one query reached the time out!")
 
-        else: # if the user is not logged in yet, redirection to the google sign in form
+        else: 
            self.redirect(users.create_login_url("/"))
             
 app = webapp2.WSGIApplication(
