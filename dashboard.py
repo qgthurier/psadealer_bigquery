@@ -101,8 +101,8 @@ class Dashboard(webapp2.RequestHandler):
                 DT_COND = ""
             elif source == "view":
                 FROM = "[87581422.view]"
-                DT_COND = "and timestamp('" + startDate_str + "') <= dt <= timestamp('" + endDate_str + "')"
-            
+                DT_COND = "and dt >= timestamp('" + startDate_str + "') and dt <= timestamp('" + endDate_str + "')"
+                
             QUERY = ("select sum(totals.visits) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
