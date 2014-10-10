@@ -9,7 +9,7 @@ import urllib
 import json
 import bqclient
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from apiclient import discovery
 from oauth2client import appengine
 from oauth2client import client
