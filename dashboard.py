@@ -59,6 +59,7 @@ class Dashboard(webapp2.RequestHandler):
             out = bqdata["rows"][0]["f"][0]["v"]
         else:
             time_out_reached = True
+            self.response.write("at least one query reached the time out!")
         return out
 
     @decorator.oauth_required
@@ -156,11 +157,11 @@ class Dashboard(webapp2.RequestHandler):
                 }
             
             logging.info(time_out_reached)
-            if not time_out_reached:
-                template = JINJA_ENVIRONMENT.get_template('management.html')
-                self.response.write(template.render(variables))
-            else:
-                self.response.write("at least one query reached the time out!")
+            #if not time_out_reached:
+            template = JINJA_ENVIRONMENT.get_template('management.html')
+            self.response.write(template.render(variables))
+            #else:
+            #self.response.write("at least one query reached the time out!")
 
         else: 
            self.redirect(users.create_login_url("/"))
