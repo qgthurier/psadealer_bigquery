@@ -121,7 +121,7 @@ class Dashboard(webapp2.RequestHandler):
             QUERY = ("select count(distinct(fullVisitorId)) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
+                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)    
             visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
             if not visitors_item:
@@ -137,7 +137,7 @@ class Dashboard(webapp2.RequestHandler):
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
+                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             logging.info(QUERY)
             item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
               
