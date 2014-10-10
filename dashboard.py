@@ -9,6 +9,7 @@ import urllib
 import json
 import bqclient
 
+from datetime import date, timedelta
 from apiclient import discovery
 from oauth2client import appengine
 from oauth2client import client
@@ -35,9 +36,13 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
     cache=memcache)
 
 BILLING_PROJECT_ID = "282649517306"
-FROM = "[87581422.ga_sessions_20141007],[87581422.ga_sessions_20141006],[87581422.ga_sessions_20141005], \
-[87581422.ga_sessions_20141004],[87581422.ga_sessions_20141003],[87581422.ga_sessions_20141002], \
-[87581422.ga_sessions_20141001],[87581422.ga_sessions_20140930]"
+
+tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
+"[87581422.ga_sessions_20141007]","[87581422.ga_sessions_20141006]","[87581422.ga_sessions_20141005]", 
+"[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
+"[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
+
+dates = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
 
 mem = memcache.Client()
 
@@ -56,40 +61,65 @@ class Dashboard(webapp2.RequestHandler):
         get = cgi.FieldStorage()
         try:
           dealer = get['dealer'].value
-          time_out = get['time_out'].value
         except:
           dealer = 'ajaccio'
+        try:
+          ndays = int(get['ndays'].value)
+        except:
+          ndays = len(tables)
+        try:
+          time_out = get['time_out'].value
+        except:
           time_out = 100
-      
+        try:  
+          source = get['source'].value
+        except:
+          source = "tables"
+        try:
+          startDate_str = get['dateStart'].value
+          startDate = datetime.strptime(get['dateStart'].value, '%Y%m%d')
+        except:
+          startDate = date.today() - timedelta(30)
+          startDate_str = startDate.strftime('%Y%m%d')
+        try:
+          endDate_str = get['endDate'].value   
+          endDate = datetime.strptime(get['endDate'].value, '%Y%m%d')
+        except:
+          endDate = date.today() - timedelta(1)
+          endDate_str = endDate.strftime('%Y%m%d')
+          
+        selected_tabs = [tables[i] for i, dt in enumerate(dates) if startDate <= dt <= endDate]   
         user = users.get_current_user()
-        if user: # if the user is already logged in we display the proper menu     
+        
+        if user: 
+            
             get = cgi.FieldStorage()
             bq = bqclient.BigQueryClient(decorator)
             
-            try:
-              startDate = get['dateStart'].value
-              endDate = get['dateEnd'].value
-            except:
-              startDate = '31daysAgo'
-              endDate = 'yesterday'
+            if source == "tables":
+                FROM = ",".join(selected_tabs)
+                DT_COND = ""
+            elif source == "view":
+                FROM = "[87581422.view]"
+                DT_COND = "and timestamp('" + startDate_str + "') <= dt <= timestamp('" + endDate_str + "')"
             
             QUERY = ("select sum(totals.visits) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)      
+                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)      
             visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits")  
             QUERY = ("select count(distinct(fullVisitorId)) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)    
+                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)    
             visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
             QUERY = ("select avg(totals.pageviews) as val,"
                     "from %s "
                     "where trafficSource.medium = 'organic'"
-                    "and lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer)
+                    "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
             item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages")  
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' ") % (FROM, dealer) 
+                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND) 
             item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
             
               
