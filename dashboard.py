@@ -112,28 +112,32 @@ class Dashboard(webapp2.RequestHandler):
             QUERY = ("select sum(totals.visits) as val,"
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)      
-            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits")
-            logging.info(QUERY) 
+                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
+            logging.info(QUERY)      
+            visites_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
+            if not visites_item:
+                visites_item = 0
             
             QUERY = ("select count(distinct(fullVisitorId)) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)    
+                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
+            logging.info(QUERY)    
             visitors_item = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
-            logging.info(QUERY) 
+            if not visitors_item:
+                visitors_item = 0
             
             QUERY = ("select avg(totals.pageviews) as val,"
                     "from %s "
                     "where trafficSource.medium = 'organic'"
                     "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
-            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages")
-            logging.info(QUERY) 
+            logging.info(QUERY)
+            item_page_visite = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages") 
              
             QUERY = ("select sum(totals.bounces)/count(*) as val,"
                    "from %s "
-                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND) 
+                   "WHERE lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
+            logging.info(QUERY)
             item_bounce = self._get_ga_data(bq.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
-            logging.info(QUERY) 
               
             variables = {
                 'url': decorator.authorize_url(),
