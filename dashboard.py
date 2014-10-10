@@ -76,16 +76,16 @@ class Dashboard(webapp2.RequestHandler):
         except:
           source = "tables"
         try:
-          startDate_str = get['dateStart'].value
-          startDate = datetime.combine(date.strptime(startDate_str, '%Y%m%d'), datetime.min.time())
+          startDate_str = get['startDate'].value
+          startDate = datetime.strptime(startDate_str, '%Y%m%d')
         except:
-          startDate = datetime.combine(date.today() - timedelta(30), datetime.min.time())
+          startDate = datetime.today() - timedelta(30)
           startDate_str = startDate.strftime('%Y%m%d')
         try:
           endDate_str = get['endDate'].value   
-          endDate = datetime.combine(endDate_str, datetime.min.time())
+          endDate = datetime.strptime(endDate_str, '%Y%m%d')
         except:
-          endDate =  datetime.combine(date.today() - timedelta(1), datetime.min.time())
+          endDate =  datetime.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
 
         selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if startDate <= dt <= endDate]   
