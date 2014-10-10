@@ -54,6 +54,7 @@ class Dashboard(webapp2.RequestHandler):
         logging.info(metrics)
         logging.info(bqdata)
         out = None
+        logging.info(bqdata['jobComplete'])
         if bqdata['jobComplete']:
             out = bqdata["rows"][0]["f"][0]["v"]
         else:
