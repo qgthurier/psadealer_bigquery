@@ -1,7 +1,6 @@
 
 #!/usr/bin/env python
 
-
 import httplib2
 import logging
 import os
@@ -32,8 +31,7 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
     CLIENT_SECRETS,
     scope=[
       'https://www.googleapis.com/auth/bigquery'
-    ],
-    cache=memcache)
+    ])
 
 BILLING_PROJECT_ID = "282649517306"
 
@@ -44,9 +42,12 @@ tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
 
 
 datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
-mem = memcache.Client()
 time_out_reached = False
-        
+
+class Timeout(webapp2.RequestHandler):
+    def get(self):
+        self.response.write("at least one query has reached the time out !")
+               
 class Dashboard(webapp2.RequestHandler):
    
     def _get_ga_data(self, bqdata, metrics):
@@ -57,14 +58,14 @@ class Dashboard(webapp2.RequestHandler):
         logging.info("job complete : " + str(bqdata['jobComplete']))
         if bqdata['jobComplete']:
             out = bqdata["rows"][0]["f"][0]["v"]
-        elif not time_out_reached:
+        else:
             time_out_reached = True
-            self.response.write("at least one query reached the time out!")
+            self.redirect("/timeout")
         return out
 
     @decorator.oauth_required
     def get(self):
-        global startDate, endDate, vue, dealer, time_out_reached
+        global time_out_reached
         
         get = cgi.FieldStorage()
         try:
@@ -158,9 +159,8 @@ class Dashboard(webapp2.RequestHandler):
             
             logging.info("time out reached : " + str(time_out_reached))
             
-            if not time_out_reached:
-                template = JINJA_ENVIRONMENT.get_template('management.html')
-                self.response.write(template.render(variables))
+            template = JINJA_ENVIRONMENT.get_template('management.html')
+            self.response.write(template.render(variables))
 
         else: 
            self.redirect(users.create_login_url("/"))
@@ -168,6 +168,7 @@ class Dashboard(webapp2.RequestHandler):
 app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
+     ('/timeout', Timeout),
      (decorator.callback_path, decorator.callback_handler())
     ],
     debug=True)
