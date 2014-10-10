@@ -9,7 +9,7 @@ import urllib
 import json
 import bqclient
 
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from apiclient import discovery
 from oauth2client import appengine
 from oauth2client import client
@@ -42,7 +42,7 @@ tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
 "[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
 "[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
 
-dates = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
+dates = [date.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
 
 mem = memcache.Client()
 
@@ -77,13 +77,13 @@ class Dashboard(webapp2.RequestHandler):
           source = "tables"
         try:
           startDate_str = get['dateStart'].value
-          startDate = datetime.strptime(get['dateStart'].value, '%Y%m%d')
+          startDate = date.strptime(get['dateStart'].value, '%Y%m%d')
         except:
           startDate = date.today() - timedelta(30)
           startDate_str = startDate.strftime('%Y%m%d')
         try:
           endDate_str = get['endDate'].value   
-          endDate = datetime.strptime(get['endDate'].value, '%Y%m%d')
+          endDate = date.strptime(get['endDate'].value, '%Y%m%d')
         except:
           endDate = date.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
