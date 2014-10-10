@@ -62,7 +62,7 @@ class Dashboard(webapp2.RequestHandler):
 
     @decorator.oauth_required
     def get(self):
-        global startDate, endDate, vue, dealer
+        global startDate, endDate, vue, dealer, time_out_reached
         
         get = cgi.FieldStorage()
         try:
@@ -152,6 +152,7 @@ class Dashboard(webapp2.RequestHandler):
                 'endDate':endDate,
                 }
             
+            logging.info(time_out_reached)
             if not time_out_reached:
                 template = JINJA_ENVIRONMENT.get_template('management.html')
                 self.response.write(template.render(variables))
