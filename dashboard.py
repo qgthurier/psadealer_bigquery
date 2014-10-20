@@ -89,14 +89,17 @@ class Dashboard(webapp2.RequestHandler):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
         
     def get_metric_timexec(self, reply, metric):
-        out = None
+        out = "no corresponding job"
         for job in reply["jobs"]:
             if job['jobReference']['jobId'] == metric:
                 out = str(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
         return out
             
     def get_metric_val(self, res):
-        return str(res['rows'][0]['f'][0]["v"])
+        out = "no rows"
+        if "rows" in res.keys():
+            out = str(res['rows'][0]['f'][0]["v"])
+        return out
 
     @decorator.oauth_required
     def get(self):
