@@ -155,9 +155,10 @@ class Dashboard(webapp2.RequestHandler):
             
             for job in reply["jobs"]:
                 if job['jobReference']['jobId'] in query_ref.values():
-                    out.append(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
+                    timexec = long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
+                    out.append(job['jobReference']['jobId'] + ": " + str(timexec) + " / " + str(job["errorResult"]))
             
-            self.response.write(out)
+            self.response.write(out + "\n" + query_ref)
             
         else: 
            self.redirect(users.create_login_url("/"))
