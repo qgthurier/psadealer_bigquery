@@ -154,7 +154,7 @@ class Dashboard(webapp2.RequestHandler):
             out = []
             
             for job in reply["jobs"]:
-                out.append(job["statistics"]["endTime"] - job["statistics"]["startTime"])
+                out.append(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
             
             self.response.write(template.render(out))
             
