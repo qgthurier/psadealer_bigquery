@@ -122,7 +122,7 @@ class Dashboard(webapp2.RequestHandler):
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
             reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal")        
-            while len(reply.jobs) < len(queries.list.items()):
+            while len(reply['jobs']) < len(queries.list.items()):
                 reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal")
             
             '''              
