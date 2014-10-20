@@ -119,7 +119,7 @@ class Dashboard(webapp2.RequestHandler):
                 DT_COND = "and dt >= timestamp('" + par['startDate_str'] + "') and dt <= timestamp('" + par['endDate_str'] + "')"
             
             for metric, query in queries.list.items():
-                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (FROM, par['dealer'], DT_COND))).execute(decorator.http())
+                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (FROM, par['dealer'], DT_COND)), maxResult=4).execute(decorator.http())
                 logging.debug(query % (FROM, par['dealer'], DT_COND))
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
