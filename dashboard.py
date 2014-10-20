@@ -89,9 +89,11 @@ class Dashboard(webapp2.RequestHandler):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
         
     def get_metric_timexec(self, reply, metric):
+        out = None
         for job in reply["jobs"]:
             if job['jobReference']['jobId'] == metric:
-                return str(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
+                out = str(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
+        return out
             
     def get_metric_val(self, res):
         return str(res['rows'][0]['f'][0]["v"])
