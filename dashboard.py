@@ -121,9 +121,9 @@ class Dashboard(webapp2.RequestHandler):
                 job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query)).execute(decorator.http())
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
-            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal").execute(decorator.http())        
+            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=4).execute(decorator.http())        
             while len(reply['jobs']) < len(queries.list.items()):
-                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal").execute(decorator.http())
+                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=4).execute(decorator.http())
             
             '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
