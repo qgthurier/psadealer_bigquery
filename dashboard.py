@@ -94,7 +94,7 @@ class Dashboard(webapp2.RequestHandler):
                 return long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
             
     def get_metric_val(self, res):
-        return res['rows'][0]['f'][0]
+        return res['rows'][0]['f'][0]["v"]
 
     @decorator.oauth_required
     def get(self):
