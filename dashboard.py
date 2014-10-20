@@ -7,9 +7,10 @@ import os
 import urllib
 import json
 import bqclient
+import queries
 
 from datetime import date, timedelta, datetime
-from apiclient import discovery
+from apiclient.discovery import build
 from oauth2client import appengine
 from oauth2client import client
 from google.appengine.api import memcache
@@ -35,47 +36,30 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
 
 BILLING_PROJECT_ID = "282649517306"
 
-tables = ["[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
+tables = ["[87581422.ga_sessions_20141019]",
+"[87581422.ga_sessions_20141018]","[87581422.ga_sessions_20141017]","[87581422.ga_sessions_20141016]",
+"[87581422.ga_sessions_20141015]","[87581422.ga_sessions_20141014]","[87581422.ga_sessions_20141013]",
+"[87581422.ga_sessions_20141012]","[87581422.ga_sessions_20141011]","[87581422.ga_sessions_20141010]",
+"[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
 "[87581422.ga_sessions_20141007]","[87581422.ga_sessions_20141006]","[87581422.ga_sessions_20141005]", 
 "[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
 "[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
 
-
 datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
-time_out_reached = False
+query_ref = {}
 
 class Timeout(webapp2.RequestHandler):
     def get(self):
         self.response.write("at least one query has reached the time out !")
                
 class Dashboard(webapp2.RequestHandler):
-   
-    def _get_ga_data(self, bqdata, metrics):
-        global time_out_reached
-        logging.info(metrics)
-        logging.info(bqdata)
-        out = None
-        logging.info("job complete : " + str(bqdata['jobComplete']))
-        if bqdata['jobComplete']:
-            out = bqdata["rows"][0]["f"][0]["v"]
-        else:
-            time_out_reached = True
-            self.redirect("/timeout")
-        return out
-
-    @decorator.oauth_required
-    def get(self):
-        global time_out_reached
-        
+    
+    def parse_get_parameters(self):
         get = cgi.FieldStorage()
         try:
           dealer = get['dealer'].value
         except:
           dealer = 'ajaccio'
-        try:
-          ndays = int(get['ndays'].value)
-        except:
-          ndays = len(tables)
         try:
           time_out = get['time_out'].value
         except:
@@ -96,55 +80,56 @@ class Dashboard(webapp2.RequestHandler):
         except:
           endDate =  datetime.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
+          
+        return {'dealer': dealer, 'timeout': time_out, 'source':source, 'startDate': startDate, 'endDate': endDate} 
+    
+    def make_query_config(self, query):
+        return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
+        
+    def get_metric_timexec(self, reply, metric):
+        global query_ref
+        '''logging.info("job complete : " + str(bqdata['jobComplete']))
+        if bqdata['jobComplete']:
+            out = bqdata["rows"][0]["f"][0]["v"]
+        else:
+            time_out_reached = True
+            self.redirect("/timeout")'''
+        for job in reply["jobs"]:
+            if job[id] == query_ref[metric]:
+                return job["statistics"]["endTime"] - job["statistics"]["startTime"]
 
-        selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if startDate <= dt <= endDate]   
-        user = users.get_current_user()
+    @decorator.oauth_required
+    def get(self):
+        par = self.parse_get_parameters()
+        selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if par['startDate'] <= dt <= par['endDate']]   
+        user = users.get_current_user()      
         
         if user: 
             
-            get = cgi.FieldStorage()
-            bq1 = bqclient.BigQueryClient(decorator)
-            bq2 = bqclient.BigQueryClient(decorator)
-            bq3 = bqclient.BigQueryClient(decorator)
-            bq4 = bqclient.BigQueryClient(decorator)
-            
+            service = build('bigquery', 'v2')                   
             if source == "tables":
                 FROM = ",".join(selected_tabs)
                 DT_COND = ""
             elif source == "view":
                 FROM = "[87581422.view]"
                 DT_COND = "and dt >= timestamp('" + startDate_str + "') and dt <= timestamp('" + endDate_str + "')"
+            
+            for metric, query in queries.list.items():
+                job = service.jobs().insert(projectId=project, body=self.make_query_config(query)).execute()
+                query_ref.update({metric: job['jobReference']['jobId']})
                 
-            QUERY = ("select sum(totals.visits) as val,"
-                   "from %s "
-                   "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
-            logging.info(QUERY)      
+            reply = service.jobs().list(projectId=project, allUsers=False, stateFilter="done", projection="minimal")        
+            while len(reply.jobs) < len(queries.list.items()):
+                reply = service.jobs().list(projectId=project, allUsers=False, stateFilter="done", projection="minimal")
+            
+            '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
             if not visites_item:
-                visites_item = 0
-            
-            QUERY = ("select count(distinct(fullVisitorId)) as val,"
-                   "from %s "
-                   "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
-            logging.info(QUERY)    
+                visites_item = 0   
             visitors_item = self._get_ga_data(bq2.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
             if not visitors_item:
                 visitors_item = 0
-            
-            QUERY = ("select avg(totals.pageviews) as val,"
-                    "from %s "
-                    "where trafficSource.medium = 'organic'"
-                    "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
-            logging.info(QUERY)
             item_page_visite = self._get_ga_data(bq3.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages") 
-             
-            QUERY = ("select sum(totals.bounces)/count(*) as val,"
-                   "from %s "
-                   "where trafficSource.medium = 'organic' "
-                   "and lower(trafficSource.referralPath) contains '%s' %s") % (FROM, dealer, DT_COND)
-            logging.info(QUERY)
             item_bounce = self._get_ga_data(bq4.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
               
             variables = {
@@ -159,12 +144,17 @@ class Dashboard(webapp2.RequestHandler):
                 'startDate':startDate,
                 'endDate':endDate,
                 }
-            
-            logging.info("time out reached : " + str(time_out_reached))
-            
+
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
-
+            '''    
+            out = []
+            
+            for job in reply["jobs"]:
+                out.append(job["statistics"]["endTime"] - job["statistics"]["startTime"])
+            
+            self.response.write(template.render(out))
+            
         else: 
            self.redirect(users.create_login_url("/"))
             
