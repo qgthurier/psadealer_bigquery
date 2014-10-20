@@ -149,9 +149,9 @@ class Dashboard(webapp2.RequestHandler):
             '''    
                 
             out = [] 
-            for metric in query_ref.values():
-                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=metric).execute(decorator.http())
-                out.append([metric + ": " + self.get_metric_val(res) + "(" + self.get_metric_timexec(reply, metric) + " ms)"])
+            for metric, id in query_ref.items():
+                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+                out.append([metric + ": " + self.get_metric_val(res) + " (" + self.get_metric_timexec(reply, id) + " ms)"])
             
             self.response.write(out)
             
