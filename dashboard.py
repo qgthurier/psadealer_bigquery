@@ -96,7 +96,7 @@ class Dashboard(webapp2.RequestHandler):
         return out
             
     def get_metric_val(self, res):
-        out = "no rows"
+        out = "no row"
         if "rows" in res.keys():
             out = str(res['rows'][0]['f'][0]["v"])
         return out
@@ -120,6 +120,7 @@ class Dashboard(webapp2.RequestHandler):
             
             for metric, query in queries.list.items():
                 job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (FROM, par['dealer'], DT_COND))).execute(decorator.http())
+                logging.debug(query % (FROM, par['dealer'], DT_COND))
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
             reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal").execute(decorator.http())        
@@ -152,7 +153,7 @@ class Dashboard(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
             '''    
-                
+            logging.debug(reply) 
             out = [] 
             for metric, id in query_ref.items():
                 res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
