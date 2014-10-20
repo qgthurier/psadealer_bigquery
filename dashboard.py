@@ -91,10 +91,10 @@ class Dashboard(webapp2.RequestHandler):
     def get_metric_timexec(self, reply, metric):
         for job in reply["jobs"]:
             if job['jobReference']['jobId'] == metric:
-                return long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
+                return str(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
             
     def get_metric_val(self, res):
-        return res['rows'][0]['f'][0]["v"]
+        return str(res['rows'][0]['f'][0]["v"])
 
     @decorator.oauth_required
     def get(self):
