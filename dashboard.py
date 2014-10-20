@@ -150,7 +150,7 @@ class Dashboard(webapp2.RequestHandler):
                 
             out = [] 
             for metric in query_ref.values():
-                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=str(query_ref[metric])).execute(decorator.http())
+                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=metric).execute(decorator.http())
                 out.append([metric + ": " + get_metric_val(res) + "(" + get_metric_timexec(reply, metric) + " ms)"])
             
             self.response.write(out)
