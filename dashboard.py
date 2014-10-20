@@ -156,7 +156,10 @@ class Dashboard(webapp2.RequestHandler):
             for job in reply["jobs"]:
                 if job['jobReference']['jobId'] in query_ref.values():
                     timexec = long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
-                    out.append(job['jobReference']['jobId'] + ": " + str(timexec) + " / " + str(job["errorResult"]))
+                    if job["errorResult"] is not None:
+                        out.append(job['jobReference']['jobId'] + ": " + str(timexec) + " / " + str(job["errorResult"]))
+                    else:
+                        out.append(job['jobReference']['jobId'] + ": " + str(timexec))
             
             self.response.write(str(out) + "\n" + str(query_ref))
             
