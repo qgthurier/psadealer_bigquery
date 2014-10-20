@@ -156,7 +156,7 @@ class Dashboard(webapp2.RequestHandler):
             for job in reply["jobs"]:
                 out.append(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
             
-            self.response.write(template.render(out))
+            self.response.write(out)
             
         else: 
            self.redirect(users.create_login_url("/"))
