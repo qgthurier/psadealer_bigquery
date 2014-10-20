@@ -89,16 +89,12 @@ class Dashboard(webapp2.RequestHandler):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
         
     def get_metric_timexec(self, reply, metric):
-        global query_ref
-        '''logging.info("job complete : " + str(bqdata['jobComplete']))
-        if bqdata['jobComplete']:
-            out = bqdata["rows"][0]["f"][0]["v"]
-        else:
-            time_out_reached = True
-            self.redirect("/timeout")'''
         for job in reply["jobs"]:
-            if job[id] == query_ref[metric]:
-                return job["statistics"]["endTime"] - job["statistics"]["startTime"]
+            if job['jobReference']['jobId'] == metric:
+                return long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
+            
+    def get_metric_val(self, res):
+        return res['rows'][0]['f'][0]
 
     @decorator.oauth_required
     def get(self):
@@ -151,17 +147,13 @@ class Dashboard(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
             '''    
-            out = []
+                
+            out = [] 
+            for metric in query_ref.values():
+                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=query_ref[metric]).execute(decorator.http())
+                out.append([metric + ": " + get_metric_val(res) + "(" + get_metric_timexec(reply, metric) + " ms)"])
             
-            for job in reply["jobs"]:
-                if job['jobReference']['jobId'] in query_ref.values():
-                    timexec = long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"])
-                    if "errorResult" in job.keys():
-                        out.append(job['jobReference']['jobId'] + ": " + str(timexec) + " / " + str(job["errorResult"]))
-                    else:
-                        out.append(job['jobReference']['jobId'] + ": " + str(timexec))
-            
-            self.response.write(str(out) + "\n" + str(query_ref))
+            self.response.write(out)
             
         else: 
            self.redirect(users.create_login_url("/"))
