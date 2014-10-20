@@ -81,7 +81,9 @@ class Dashboard(webapp2.RequestHandler):
           endDate =  datetime.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
           
-        return {'dealer': dealer, 'timeout': time_out, 'source':source, 'startDate': startDate, 'endDate': endDate} 
+        return {'dealer': dealer, 'timeout': time_out, 
+                'source':source, 'startDate': startDate, 
+                'endDate': endDate, 'startDate_str': startDate_str, 'endDate_str': endDate_str} 
     
     def make_query_config(self, query):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
@@ -107,12 +109,12 @@ class Dashboard(webapp2.RequestHandler):
         if user: 
             
             service = build('bigquery', 'v2')                   
-            if source == "tables":
+            if par['source'] == "tables":
                 FROM = ",".join(selected_tabs)
                 DT_COND = ""
-            elif source == "view":
+            elif par['source'] == "view":
                 FROM = "[87581422.view]"
-                DT_COND = "and dt >= timestamp('" + startDate_str + "') and dt <= timestamp('" + endDate_str + "')"
+                DT_COND = "and dt >= timestamp('" + par['startDate_str'] + "') and dt <= timestamp('" + par['endDate_str'] + "')"
             
             for metric, query in queries.list.items():
                 job = service.jobs().insert(projectId=project, body=self.make_query_config(query)).execute()
