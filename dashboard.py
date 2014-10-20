@@ -102,6 +102,8 @@ class Dashboard(webapp2.RequestHandler):
 
     @decorator.oauth_required
     def get(self):
+        global project
+        
         par = self.parse_get_parameters()
         selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if par['startDate'] <= dt <= par['endDate']]   
         user = users.get_current_user()      
@@ -117,12 +119,12 @@ class Dashboard(webapp2.RequestHandler):
                 DT_COND = "and dt >= timestamp('" + par['startDate_str'] + "') and dt <= timestamp('" + par['endDate_str'] + "')"
             
             for metric, query in queries.list.items():
-                job = service.jobs().insert(projectId=project, body=self.make_query_config(query)).execute()
+                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query)).execute()
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
-            reply = service.jobs().list(projectId=project, allUsers=False, stateFilter="done", projection="minimal")        
+            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal")        
             while len(reply.jobs) < len(queries.list.items()):
-                reply = service.jobs().list(projectId=project, allUsers=False, stateFilter="done", projection="minimal")
+                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal")
             
             '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
