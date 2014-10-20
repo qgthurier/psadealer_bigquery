@@ -36,7 +36,7 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
 
 BILLING_PROJECT_ID = "282649517306"
 
-tables = ["[87581422.ga_sessions_20141019]",
+'''tables = ["[87581422.ga_sessions_20141019]",
 "[87581422.ga_sessions_20141018]","[87581422.ga_sessions_20141017]","[87581422.ga_sessions_20141016]",
 "[87581422.ga_sessions_20141015]","[87581422.ga_sessions_20141014]","[87581422.ga_sessions_20141013]",
 "[87581422.ga_sessions_20141012]","[87581422.ga_sessions_20141011]","[87581422.ga_sessions_20141010]",
@@ -45,7 +45,7 @@ tables = ["[87581422.ga_sessions_20141019]",
 "[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
 "[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
 
-datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]
+datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]'''
 query_ref = {}
 
 class Timeout(webapp2.RequestHandler):
@@ -112,7 +112,8 @@ class Dashboard(webapp2.RequestHandler):
             
             service = build('bigquery', 'v2')                   
             if par['source'] == "tables":
-                FROM = ",".join(selected_tabs)
+                #FROM = ",".join(selected_tabs)
+                FROM = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + par['startDate_str'] + "'), TIMESTAMP('" + par['endDate_str'] + "')))"
                 DT_COND = ""
             elif par['source'] == "view":
                 FROM = "[87581422.view]"
@@ -123,9 +124,9 @@ class Dashboard(webapp2.RequestHandler):
                 logging.debug(query % (FROM, par['dealer'], DT_COND))
                 query_ref.update({metric: job['jobReference']['jobId']})
                 
-            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=4).execute(decorator.http())        
+            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=len(query_ref)).execute(decorator.http())        
             while len(reply['jobs']) < len(queries.list.items()):
-                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=4).execute(decorator.http())
+                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=len(query_ref)).execute(decorator.http())
             
             '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
