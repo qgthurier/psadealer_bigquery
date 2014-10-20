@@ -154,6 +154,7 @@ class Dashboard(webapp2.RequestHandler):
             self.response.write(template.render(variables))
             '''    
             logging.debug(reply) 
+            logging.debug(query_ref)
             out = [] 
             for metric, id in query_ref.items():
                 res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
