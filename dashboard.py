@@ -42,7 +42,7 @@ class Timeout(webapp2.RequestHandler):
                
 class Dashboard(webapp2.RequestHandler):
     
-    def initialize(self):
+    def toto(self):
         self.app.config['bq_service'] = build('bigquery', 'v2')
         self.app.config['par'] = self.parse_get_parameters()
         self.app.config['query_ref'] = {}
