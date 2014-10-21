@@ -100,7 +100,7 @@ class Dashboard(webapp2.RequestHandler):
             fields = result['schema']['fields']
             out = "\t".join([field['name'] for field in fields])
             for row in result['rows']:
-                out += "\n" + "\t".join([UTF8Writer(str(row['f'][i]['v'])) for i in xrange(len(fields))])
+                out += "\n" + "\t".join([str(row['f'][i]['v']).encode('utf8') for i in xrange(len(fields))])
         else:
             out = "no row"
         return out
