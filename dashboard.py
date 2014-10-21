@@ -42,7 +42,7 @@ class Timeout(webapp2.RequestHandler):
                
 class Dashboard(webapp2.RequestHandler):
     
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.bq_service = None
         self.parse_get_parameters()
         self.query_ref = {}
