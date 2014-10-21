@@ -97,12 +97,14 @@ class Dashboard(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):        
         user = users.get_current_user()         
-        if user:                
+        if user:  
+            self.toto()
+            service = self.app.config.get('bq_service')           
             for metric, query in queries.list.items():
                 job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
                 self.query_ref.update({metric: job['jobReference']['jobId']})        
-            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
+            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
                 reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
