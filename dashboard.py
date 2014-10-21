@@ -105,7 +105,7 @@ class Dashboard(webapp2.RequestHandler):
     def get(self):
         
         par = self.parse_get_parameters()
-        selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if par['startDate'] <= dt <= par['endDate']]   
+        #selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if par['startDate'] <= dt <= par['endDate']]   
         user = users.get_current_user()      
         
         if user: 
