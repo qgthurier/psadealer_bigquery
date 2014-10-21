@@ -26,16 +26,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True,
     extensions=['jinja2.ext.autoescape'])
 
-'''
-CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
-
-decorator = appengine.oauth2decorator_from_clientsecrets(
-    CLIENT_SECRETS,
-    scope=[
-      'https://www.googleapis.com/auth/bigquery'
-    ])
-'''
-
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
 credentials = AppAssertionCredentials(scope=SCOPE)
@@ -99,13 +89,12 @@ class Dashboard(webapp2.RequestHandler):
     def get_metric_val(self, id):
         res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
         return [str(r['f'][0]["v"]) for r in res['rows']][0] 
-
-
-    #@decorator.oauth_required
     
-    def get(self):        
-        #user = users.get_current_user()         
-        #if user: 
+    def get_query_val(self, id):
+        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
+        return str(res['rows'])
+    
+    def get(self):         
         # initialize parameters 
         self.initialization()
         # insert queries in the jobs queue       
@@ -147,16 +136,13 @@ class Dashboard(webapp2.RequestHandler):
         logging.debug(reply) 
         logging.debug(self.query_ref)
         logging.debug(self.query_timexec)
-        out = [metric + ": " + self.get_metric_val(id) + " (" + str(self.query_timexec[id]) + " ms)" for metric, id in self.query_ref.items()]
+        out = [metric + ": " + self.get_query_val(id) + " (" + str(self.query_timexec[id]) + " ms)" for metric, id in self.query_ref.items()]
         self.response.write(out)     
-        #else: 
-          # self.redirect(users.create_login_url("/"))
             
 app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
-     ('/timeout', Timeout),
-     #(decorator.callback_path, decorator.callback_handler())
+     ('/timeout', Timeout)
     ],
     debug=True,
     config={'maxIter': 50})
