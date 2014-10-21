@@ -95,10 +95,9 @@ class Dashboard(webapp2.RequestHandler):
         logging.debug(result)
         if int(result["totalRows"]) > 0:
             fields = result['schema']['fields']
-            field_size = len(fields)
             out = "\t".join([field['name'] for field in fields])
             for row in result['rows']:
-                out += "\n" + "\t".join([row['f'][i]['v'] for i in xrange(len(fields))])
+                out += "\n" + "\t".join([str(row['f'][i]['v']) for i in xrange(len(fields))])
         else:
             out = "no row"
         return out
