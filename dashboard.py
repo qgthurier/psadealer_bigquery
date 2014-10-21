@@ -96,7 +96,7 @@ class Dashboard(webapp2.RequestHandler):
             fields = result['schema']['fields']
             field_size = len(fields)
             out = "\t".join([field['name'] for field in fields])
-            for row in result['rows']:
+            for row in result['global']['rows']:
                 out += "\n" + "\t".join([row['f'][i]['v'] for i in xrange(len(fields))])
         else:
             out = "no row"
