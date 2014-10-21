@@ -92,6 +92,7 @@ class Dashboard(webapp2.RequestHandler):
   
     def get_query_val(self, id):
         result = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
+        logging(result)
         if result["totalRows"] > 0:
             fields = result['schema']['fields']
             field_size = len(fields)
