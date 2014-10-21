@@ -87,7 +87,7 @@ class Dashboard(webapp2.RequestHandler):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
         
     def get_metric_timexec(self, id):
-        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+        res = self.bq_service.jobs().get(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
         return str(long(res["statistics"]["endTime"]) - long(res["statistics"]["startTime"]))
             
     def get_metric_val(self, id):
