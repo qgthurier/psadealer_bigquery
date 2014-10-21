@@ -46,10 +46,10 @@ class Dashboard(webapp2.RequestHandler):
         self.app.config['bq_service'] = build('bigquery', 'v2')
         self.app.config['par'] = self.parse_get_parameters()
         self.app.config['query_ref'] = {}
-        if self.app.config['par']['source'] == "tables":
+        if self.app.config.get('par')['source'] == "tables":
             self.app.config['from_statement'] = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
             self.app.config['date_condition'] = ""
-        elif self.app.config['par']['source'] == "view":
+        elif self.app.config.get('par')['source'] == "view":
             self.app.config['from_statement'] = "[87581422.view]"
             self.app.config['date_condition'] = "and dt >= timestamp('" + self.par['startDate_str'] + "') and dt <= timestamp('" + self.par['endDate_str'] + "')"
         
