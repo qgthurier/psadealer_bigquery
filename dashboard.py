@@ -145,7 +145,7 @@ class Dashboard(webapp2.RequestHandler):
         logging.debug(self.query_ref)
         logging.debug(self.query_timexec)
         out = [metric + " - " + str(self.query_timexec[id]) + " ms \n" + self.get_query_val(id) for metric, id in self.query_ref.items()]
-        self.response.write("<pre>" +"".join(out) + "</pre>")     
+        self.response.write("<pre>" +"\n\n".join(out) + "</pre>")     
             
 app = webapp2.WSGIApplication(
     [
