@@ -18,32 +18,32 @@ list = {
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by trafficSource.medium"),
+                   "group by medium"),
         
 'by_device':("select device.deviceCategory as device, sum(totals.visits) as visits "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by device.deviceCategory"),
+                   "group by device"),
         
 'by_browser':("select device.browser as browser, sum(totals.visits) as visits "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by device.browser"),
+                   "group by browser"),
 
 'by_title':("select hits.page.pageTitle as pagetitle, count(hits.eventInfo.eventCategory) as eventcat, sum(totals.pageviews) as sumpageviews "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by hits.page.pageTitle"),
+                   "group by pageTitle"),
 
 'by_model':("select customDimensions.value as model, sum(totals.pageviews) as sumpageviews "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where customDimensions.index = 9 "
                    "and lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by customDimensions.value "
+                   "group by model "
                    "order by sumpageviews desc "
                    "limit 20")
                         
