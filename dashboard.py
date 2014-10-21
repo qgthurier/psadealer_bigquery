@@ -92,7 +92,7 @@ class Dashboard(webapp2.RequestHandler):
         return str(long(res["statistics"]["endTime"]) - long(res["statistics"]["startTime"]))
             
     def get_metric_val(self, id):
-        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
         return [str(r['f'][0]["v"]) for r in res['rows']][0] 
 
     @decorator.oauth_required
@@ -108,25 +108,15 @@ class Dashboard(webapp2.RequestHandler):
                 self.query_ref.update({metric: job['jobReference']['jobId']})
                 self.query_timexec.update({job['jobReference']['jobId']: 0})
             # wait until all user's queries are done      
-            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())        
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             i = 0
             while i <= self.app.config.get('maxIter') and len(set(self.query_ref.values()) - job_done) > 0:
-                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())
+                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
                 job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
-                i += 1
-            
+                i += 1       
                 
             '''              
-            visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
-            if not visites_item:
-                visites_item = 0   
-            visitors_item = self._get_ga_data(bq2.Query(QUERY, BILLING_PROJECT_ID, time_out), "visitors")  
-            if not visitors_item:
-                visitors_item = 0
-            item_page_visite = self._get_ga_data(bq3.Query(QUERY, BILLING_PROJECT_ID, time_out), "pages") 
-            item_bounce = self._get_ga_data(bq4.Query(QUERY, BILLING_PROJECT_ID, time_out), "bounce")  
-              
             variables = {
                 'url': decorator.authorize_url(),
                 'has_credentials': decorator.has_credentials(),
@@ -142,7 +132,8 @@ class Dashboard(webapp2.RequestHandler):
 
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
-            '''    
+            '''   
+                 
             # calculate time execution for each query
             for j in reply['jobs']:
                 if j['jobReference']['jobId'] in self.query_ref.values():
