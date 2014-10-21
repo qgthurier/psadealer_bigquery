@@ -28,8 +28,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
-credentials = AppAssertionCredentials(scope=SCOPE)
-http = credentials.authorize(httplib2.Http())
+HTTP = AppAssertionCredentials(scope=SCOPE).credentials.authorize(httplib2.Http())
+MAXITER = 50
 
 class Timeout(webapp2.RequestHandler):
     def get(self):
@@ -38,7 +38,7 @@ class Timeout(webapp2.RequestHandler):
 class Dashboard(webapp2.RequestHandler):
     
     def initialization(self):
-        self.bq_service = build('bigquery', 'v2', http=http)
+        self.bq_service = build('bigquery', 'v2', http=HTTP)
         self.par = self.parse_get_parameters()
         self.query_ref = {}
         self.query_timexec = {}
@@ -107,7 +107,7 @@ class Dashboard(webapp2.RequestHandler):
         reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
         job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
         i = 0
-        while i <= self.app.config.get('maxIter') and len(set(self.query_ref.values()) - job_done) > 0:
+        while i <= MAXITER and len(set(self.query_ref.values()) - job_done) > 0:
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             i += 1          
@@ -144,5 +144,4 @@ app = webapp2.WSGIApplication(
      ('/', Dashboard),
      ('/timeout', Timeout)
     ],
-    debug=True,
-    config={'maxIter': 50})
+    debug=True)

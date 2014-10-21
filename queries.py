@@ -38,11 +38,12 @@ list = {
                    "and lower(trafficSource.referralPath) contains '%s' %s "
                    "group by hits.page.pageTitle"),
 
-'by_model':("select hits.customDimensions.9, sum(totals.pageviews) as tot "
+'by_model':("select customDimensions.value, sum(totals.pageviews) as tot "
                    "from %s "
                    "where trafficSource.medium = 'organic' "
+                   "and where customDimensions.index = 9 "
                    "and lower(trafficSource.referralPath) contains '%s' %s "
-                   "group by hits.customDimensions.9 "
+                   "group by customDimensions.value "
                    "order by tot desc "
                    "limit 20")
                         
