@@ -20,7 +20,9 @@ from google.appengine.ext import ndb
 import webapp2
 import jinja2
 import cgi 
-        
+
+from Base import Basehandler
+      
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     autoescape=True,
