@@ -92,7 +92,7 @@ class Dashboard(webapp2.RequestHandler):
     
     def get_query_val(self, id):
         res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
-        return str(res['rows'])
+        return str(res)
     
     def get(self):         
         # initialize parameters 
