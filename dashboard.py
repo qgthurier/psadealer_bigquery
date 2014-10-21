@@ -106,7 +106,7 @@ class Dashboard(webapp2.RequestHandler):
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
-                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
+                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
                 job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
                 
             '''              
