@@ -43,7 +43,7 @@ class Timeout(webapp2.RequestHandler):
 class Dashboard(webapp2.RequestHandler):
     
     def toto(self):
-        self.bq_service = build('bigquery', 'v2')
+        self.bq_service = build('bigquery', 'v2', http=decorator.http())
         self.par = self.parse_get_parameters()
         self.query_ref = {}
         self.query_timexec = {}
@@ -103,7 +103,7 @@ class Dashboard(webapp2.RequestHandler):
             self.toto()
             # insert queries in the jobs queue       
             for metric, query in queries.list.items():
-                job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
+                job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
                 self.query_ref.update({metric: job['jobReference']['jobId']})
                 self.query_timexec.update({job['jobReference']['jobId']: 0})
