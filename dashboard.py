@@ -43,15 +43,15 @@ class Timeout(webapp2.RequestHandler):
 class Dashboard(webapp2.RequestHandler):
     
     def toto(self):
-        self.app.config['bq_service'] = build('bigquery', 'v2')
-        self.app.config['par'] = self.parse_get_parameters()
-        self.app.config['query_ref'] = {}
-        if self.app.config.get('par')['source'] == "tables":
-            self.app.config['from_statement'] = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
-            self.app.config['date_condition'] = ""
-        elif self.app.config.get('par')['source'] == "view":
-            self.app.config['from_statement'] = "[87581422.view]"
-            self.app.config['date_condition'] = "and dt >= timestamp('" + self.par['startDate_str'] + "') and dt <= timestamp('" + self.par['endDate_str'] + "')"
+        self.bq_service = build('bigquery', 'v2')
+        self.par = self.parse_get_parameters()
+        self.query_ref = {}
+        if self.par['source'] == "tables":
+            self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
+            self.date_condition = ""
+        elif self.par['source'] == "view":
+            self.from_statement = "[87581422.view]"
+            self.date_condition = "and dt >= timestamp('" + self.par['startDate_str'] + "') and dt <= timestamp('" + self.par['endDate_str'] + "')"
         
     def parse_get_parameters(self):
         get = cgi.FieldStorage()
@@ -98,13 +98,12 @@ class Dashboard(webapp2.RequestHandler):
     def get(self):        
         user = users.get_current_user()         
         if user:  
-            self.toto()
-            service = self.app.config.get('bq_service')           
+            self.toto()          
             for metric, query in queries.list.items():
-                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
+                job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
                 self.query_ref.update({metric: job['jobReference']['jobId']})        
-            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
                 reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
