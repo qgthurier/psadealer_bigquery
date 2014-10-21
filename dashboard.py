@@ -136,7 +136,7 @@ class Dashboard(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('management.html')
         self.response.write(template.render(variables))
         '''             
-        # calculate time execution for each query
+        # calculate time execution for each quer
         for j in reply['jobs']:
             if j['jobReference']['jobId'] in self.query_ref.values():
                 self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
