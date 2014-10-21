@@ -110,9 +110,11 @@ class Dashboard(webapp2.RequestHandler):
             # wait until all user's queries are done      
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
-            while len(set(self.query_ref.values()) - job_done) > 0:
+            i = 0
+            while i <= self.app.config.get('maxIter') and len(set(self.query_ref.values()) - job_done) > 0:
                 reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())
                 job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
+                i += 1
             
                 
             '''              
@@ -145,14 +147,11 @@ class Dashboard(webapp2.RequestHandler):
             for j in reply['jobs']:
                 if j['jobReference']['jobId'] in self.query_ref.values():
                     self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
-                
+            # add debug information    
             logging.debug(reply) 
             logging.debug(self.query_ref)
             logging.debug(self.query_timexec)
-            out = [] 
-            for metric, id in self.query_ref.items():            
-                out.append([metric + ": " + self.get_metric_val(id) + " (" + self.get_metric_timexec(id) + " ms)"])
-            
+            out = [metric + ": " + self.get_metric_val(id) + " (" + self.query_timexec[id] + " ms)" for metric, id in self.query_ref.items()]
             self.response.write(out)
             
         else: 
@@ -164,4 +163,5 @@ app = webapp2.WSGIApplication(
      ('/timeout', Timeout),
      (decorator.callback_path, decorator.callback_handler())
     ],
-    debug=True)
+    debug=True,
+    config={'maxIter': 50})
