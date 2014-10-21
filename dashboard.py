@@ -46,11 +46,10 @@ class Dashboard(webapp2.RequestHandler):
         self.bq_service = build('bigquery', 'v2')
         self.par = self.parse_get_parameters()
         self.query_ref = {}
-        par = self.par
-        if par['source'] == "tables":
+        if self.par['source'] == "tables":
             self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
             self.date_condition = ""
-        elif par['source'] == "view":
+        elif self.par['source'] == "view":
             self.from_statement = "[87581422.view]"
             self.date_condition = "and dt >= timestamp('" + self.par['startDate_str'] + "') and dt <= timestamp('" + self.par['endDate_str'] + "')"
         
@@ -104,7 +103,7 @@ class Dashboard(webapp2.RequestHandler):
                 job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
                 self.query_ref.update({metric: job['jobReference']['jobId']})        
-            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
                 reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
