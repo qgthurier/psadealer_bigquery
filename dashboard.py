@@ -108,10 +108,10 @@ class Dashboard(webapp2.RequestHandler):
                 self.query_ref.update({metric: job['jobReference']['jobId']})
                 self.query_timexec.update({job['jobReference']['jobId']: 0})
             # wait until all user's queries are done      
-            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())        
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
-                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
+                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute(decorator.http())
                 job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             
                 
