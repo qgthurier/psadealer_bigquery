@@ -80,7 +80,7 @@ class Dashboard(webapp2.RequestHandler):
         except:
           endDate =  datetime.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
-        self.par = {'dealer': dealer, 'timeout': time_out, 
+        return {'dealer': dealer, 'timeout': time_out, 
                     'source':source, 'startDate': startDate, 
                     'endDate': endDate, 'startDate_str': startDate_str, 'endDate_str': endDate_str} 
     
