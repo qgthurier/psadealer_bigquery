@@ -102,6 +102,7 @@ class Dashboard(webapp2.RequestHandler):
 
 
     #@decorator.oauth_required
+    
     def get(self):        
         #user = users.get_current_user()         
         #if user: 
@@ -155,7 +156,7 @@ app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
      ('/timeout', Timeout),
-     (decorator.callback_path, decorator.callback_handler())
+     #(decorator.callback_path, decorator.callback_handler())
     ],
     debug=True,
     config={'maxIter': 50})
