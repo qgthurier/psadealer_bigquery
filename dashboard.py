@@ -106,7 +106,7 @@ class Dashboard(webapp2.RequestHandler):
                 job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
                 self.query_ref.update({metric: job['jobReference']['jobId']})
-                self.query_timexec.update({job['jobReference']['jobId']: Null})
+                self.query_timexec.update({job['jobReference']['jobId']: 0})
             # wait until all user's queries are done      
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
