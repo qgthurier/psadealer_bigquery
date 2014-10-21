@@ -36,24 +36,23 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
 
 BILLING_PROJECT_ID = "282649517306"
 
-'''tables = ["[87581422.ga_sessions_20141019]",
-"[87581422.ga_sessions_20141018]","[87581422.ga_sessions_20141017]","[87581422.ga_sessions_20141016]",
-"[87581422.ga_sessions_20141015]","[87581422.ga_sessions_20141014]","[87581422.ga_sessions_20141013]",
-"[87581422.ga_sessions_20141012]","[87581422.ga_sessions_20141011]","[87581422.ga_sessions_20141010]",
-"[87581422.ga_sessions_20141009]","[87581422.ga_sessions_20141008]",
-"[87581422.ga_sessions_20141007]","[87581422.ga_sessions_20141006]","[87581422.ga_sessions_20141005]", 
-"[87581422.ga_sessions_20141004]","[87581422.ga_sessions_20141003]","[87581422.ga_sessions_20141002]",
-"[87581422.ga_sessions_20141001]","[87581422.ga_sessions_20140930]"]
-
-datetimes = [datetime.strptime(tab.split("_")[2][:-1], '%Y%m%d') for tab in tables]'''
-query_ref = {}
-
 class Timeout(webapp2.RequestHandler):
     def get(self):
         self.response.write("at least one query has reached the time out !")
                
 class Dashboard(webapp2.RequestHandler):
     
+    def __init__(self):
+        self.bq_service = None
+        self.parse_get_parameters()
+        self.query_ref = {}
+        if self.par['source'] == "tables":
+            self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
+            self.date_condition = ""
+        elif self.par['source'] == "view":
+            self.from_statement = "[87581422.view]"
+            self.date_condition = "and dt >= timestamp('" + self.par['startDate_str'] + "') and dt <= timestamp('" + self.par['endDate_str'] + "')"
+        
     def parse_get_parameters(self):
         get = cgi.FieldStorage()
         try:
@@ -80,54 +79,36 @@ class Dashboard(webapp2.RequestHandler):
         except:
           endDate =  datetime.today() - timedelta(1)
           endDate_str = endDate.strftime('%Y%m%d')
-          
-        return {'dealer': dealer, 'timeout': time_out, 
-                'source':source, 'startDate': startDate, 
-                'endDate': endDate, 'startDate_str': startDate_str, 'endDate_str': endDate_str} 
+        self.par = {'dealer': dealer, 'timeout': time_out, 
+                    'source':source, 'startDate': startDate, 
+                    'endDate': endDate, 'startDate_str': startDate_str, 'endDate_str': endDate_str} 
     
     def make_query_config(self, query):
         return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
         
-    def get_metric_timexec(self, reply, metric):
-        out = "no corresponding job"
-        for job in reply["jobs"]:
-            if job['jobReference']['jobId'] == metric:
-                out = str(long(job["statistics"]["endTime"]) - long(job["statistics"]["startTime"]))
-        return out
+    def get_metric_timexec(self, id):
+        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+        return str(long(res["statistics"]["endTime"]) - long(res["statistics"]["startTime"]))
             
-    def get_metric_val(self, res):
-        out = "no row"
-        if "rows" in res.keys():
-            out = str(res['rows'][0]['f'][0]["v"])
-        return out
+    def get_metric_val(self, id):
+        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+        return [str(r['f'][0]["v"]) for r in res['rows']][0] 
 
     @decorator.oauth_required
-    def get(self):
-        
-        par = self.parse_get_parameters()
-        #selected_tabs = [tables[i] for i, dt in enumerate(datetimes) if par['startDate'] <= dt <= par['endDate']]   
-        user = users.get_current_user()      
-        
-        if user: 
-            
-            service = build('bigquery', 'v2')                   
-            if par['source'] == "tables":
-                #FROM = ",".join(selected_tabs)
-                FROM = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + par['startDate_str'] + "'), TIMESTAMP('" + par['endDate_str'] + "')))"
-                DT_COND = ""
-            elif par['source'] == "view":
-                FROM = "[87581422.view]"
-                DT_COND = "and dt >= timestamp('" + par['startDate_str'] + "') and dt <= timestamp('" + par['endDate_str'] + "')"
-            
+    def get(self):        
+        user = users.get_current_user()         
+        if user:   
+            self.bq_service = build('bigquery', 'v2')                   
             for metric, query in queries.list.items():
-                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (FROM, par['dealer'], DT_COND))).execute(decorator.http())
-                logging.debug(query % (FROM, par['dealer'], DT_COND))
-                query_ref.update({metric: job['jobReference']['jobId']})
+                job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
+                logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
+                self.query_ref.update({metric: job['jobReference']['jobId']})        
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal",maxResults=len(query_ref), fields="jobs/jobReference").execute(decorator.http())        
+            job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
+            while len(set(self.query_ref.values()) - job_done) > 0:
+                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
+                job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
                 
-            reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=len(query_ref)).execute(decorator.http())        
-            while len(reply['jobs']) < len(queries.list.items()):
-                reply = service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", maxResults=len(query_ref)).execute(decorator.http())
-            
             '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
             if not visites_item:
@@ -157,9 +138,8 @@ class Dashboard(webapp2.RequestHandler):
             logging.debug(reply) 
             logging.debug(query_ref)
             out = [] 
-            for metric, id in query_ref.items():
-                res = service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
-                out.append([metric + ": " + self.get_metric_val(res) + " (" + self.get_metric_timexec(reply, id) + " ms)"])
+            for metric, id in query_ref.items():            
+                out.append([metric + ": " + self.get_metric_val(id) + " (" + self.get_metric_timexec(id) + " ms)"])
             
             self.response.write(out)
             
