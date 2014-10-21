@@ -46,6 +46,7 @@ class Dashboard(webapp2.RequestHandler):
         self.bq_service = build('bigquery', 'v2')
         self.par = self.parse_get_parameters()
         self.query_ref = {}
+        self.query_timexec = {}
         if self.par['source'] == "tables":
             self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
             self.date_condition = ""
@@ -97,17 +98,22 @@ class Dashboard(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):        
         user = users.get_current_user()         
-        if user:  
-            self.toto()          
+        if user: 
+            # initialize parameters 
+            self.toto()
+            # insert queries in the jobs queue       
             for metric, query in queries.list.items():
                 job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
-                self.query_ref.update({metric: job['jobReference']['jobId']})        
+                self.query_ref.update({metric: job['jobReference']['jobId']})
+                self.query_timexec.update({job['jobReference']['jobId']: Null})
+            # wait until all user's queries are done      
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())        
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
             while len(set(self.query_ref.values()) - job_done) > 0:
                 reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs/jobReference").execute(decorator.http())
                 job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
+            
                 
             '''              
             visites_item = self._get_ga_data(bq1.Query(QUERY, BILLING_PROJECT_ID, time_out), "visits") 
@@ -135,8 +141,14 @@ class Dashboard(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('management.html')
             self.response.write(template.render(variables))
             '''    
+            # calculate time execution for each query
+            for j in reply['jobs']:
+                if j['jobReference']['jobId'] in self.query_ref.values():
+                    self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
+                
             logging.debug(reply) 
             logging.debug(self.query_ref)
+            logging.debug(self.query_timexec)
             out = [] 
             for metric, id in self.query_ref.items():            
                 out.append([metric + ": " + self.get_metric_val(id) + " (" + self.get_metric_timexec(id) + " ms)"])
