@@ -1,12 +1,12 @@
 list = {
 
 'global':("select sum(totals.bounces)/count(*) as bouncerate, avg(totals.pageviews) as avgpageviews, "
-                   "count(distinct(fullVisitorId)) as visitors, sum(totals.visits) as visits"
+                   "count(distinct(fullVisitorId)) as visitors, sum(totals.visits) as visits "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "),
 
-'by_date':("select sum(totals.visits) as visits, count(distinct(fullVisitorId)) as visitors, "
+'by_date':("select sum(totals.visits) as visits, count(distinct(fullVisitorId)) as visitors "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
@@ -14,25 +14,25 @@ list = {
                
 'by_medium':("select sum(totals.visits) as visits, count(distinct(fullVisitorId)) as visitors, "
                    "sum(totals.bounces)/count(*) as bouncerate, "
-                   "avg(totals.pageviews) as avgpageviews, avg(totals.timeOnSite) avgtimeonsite"
+                   "avg(totals.pageviews) as avgpageviews, avg(totals.timeOnSite) as avgtimeonsite "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
                    "group by trafficSource.medium"),
         
-'by_device':("select sum(totals.visits) as visits"
+'by_device':("select sum(totals.visits) as visits "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
                    "group by device.deviceCategory"),
         
-'by_browser':("select sum(totals.visits) as visits"
+'by_browser':("select sum(totals.visits) as visits "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
                    "group by device.browser"),
 
-'by_title':("select count(hits.eventInfo.eventCategory) as eventcat, sum(totals.pageviews) as sumpageviews"
+'by_title':("select count(hits.eventInfo.eventCategory) as eventcat, sum(totals.pageviews) as sumpageviews "
                    "from %s "
                    #"where trafficSource.medium = 'organic' "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
