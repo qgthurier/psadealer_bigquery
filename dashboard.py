@@ -138,7 +138,7 @@ class Dashboard(webapp2.RequestHandler):
             logging.debug(reply) 
             logging.debug(self.query_ref)
             out = [] 
-            for metric, id in query_ref.items():            
+            for metric, id in self.query_ref.items():            
                 out.append([metric + ": " + self.get_metric_val(id) + " (" + self.get_metric_timexec(id) + " ms)"])
             
             self.response.write(out)
