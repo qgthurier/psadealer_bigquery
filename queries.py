@@ -41,7 +41,7 @@ list = {
 'by_model':("select customDimensions.value, sum(totals.pageviews) as tot "
                    "from %s "
                    "where trafficSource.medium = 'organic' "
-                   "and where customDimensions.index = 9 "
+                   "and customDimensions.index = 9 "
                    "and lower(trafficSource.referralPath) contains '%s' %s "
                    "group by customDimensions.value "
                    "order by tot desc "
