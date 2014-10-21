@@ -42,8 +42,8 @@ class Timeout(webapp2.RequestHandler):
                
 class Dashboard(webapp2.RequestHandler):
     
-    def initialize(self):
-        self.bq_service = build('bigquery', 'v2') 
+    def __init__(self, request, response):
+        self.bq_service = None
         self.parse_get_parameters()
         self.query_ref = {}
         if self.par['source'] == "tables":
@@ -98,7 +98,7 @@ class Dashboard(webapp2.RequestHandler):
     def get(self):        
         user = users.get_current_user()         
         if user:   
-            self.initialize()                   
+            self.bq_service = build('bigquery', 'v2')                   
             for metric, query in queries.list.items():
                 job = service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute(decorator.http())
                 logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
