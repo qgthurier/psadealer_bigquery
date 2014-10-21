@@ -100,6 +100,7 @@ class Dashboard(webapp2.RequestHandler):
         res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
         return [str(r['f'][0]["v"]) for r in res['rows']][0] 
 
+
     #@decorator.oauth_required
     def get(self):        
         #user = users.get_current_user()         
