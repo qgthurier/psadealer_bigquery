@@ -28,7 +28,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
-HTTP = AppAssertionCredentials(scope=SCOPE).credentials.authorize(httplib2.Http())
+HTTP = AppAssertionCredentials(scope=SCOPE).authorize(httplib2.Http())
 MAXITER = 50
 
 class Timeout(webapp2.RequestHandler):
