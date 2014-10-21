@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 import httplib2
@@ -16,6 +15,7 @@ from oauth2client import client
 from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from oauth2client.appengine import AppAssertionCredentials
 
 import webapp2
 import jinja2
@@ -26,6 +26,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True,
     extensions=['jinja2.ext.autoescape'])
 
+'''
 CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
 
 decorator = appengine.oauth2decorator_from_clientsecrets(
@@ -33,8 +34,12 @@ decorator = appengine.oauth2decorator_from_clientsecrets(
     scope=[
       'https://www.googleapis.com/auth/bigquery'
     ])
+'''
 
 BILLING_PROJECT_ID = "282649517306"
+SCOPE = 'https://www.googleapis.com/auth/bigquery'
+credentials = AppAssertionCredentials(scope=SCOPE)
+http = credentials.authorize(httplib2.Http())
 
 class Timeout(webapp2.RequestHandler):
     def get(self):
@@ -42,8 +47,8 @@ class Timeout(webapp2.RequestHandler):
                
 class Dashboard(webapp2.RequestHandler):
     
-    def toto(self):
-        self.bq_service = build('bigquery', 'v2', http=decorator.http())
+    def initialization(self):
+        self.bq_service = build('bigquery', 'v2', http=http)
         self.par = self.parse_get_parameters()
         self.query_ref = {}
         self.query_timexec = {}
@@ -97,56 +102,53 @@ class Dashboard(webapp2.RequestHandler):
 
     @decorator.oauth_required
     def get(self):        
-        user = users.get_current_user()         
-        if user: 
-            # initialize parameters 
-            self.toto()
-            # insert queries in the jobs queue       
-            for metric, query in queries.list.items():
-                job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
-                logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
-                self.query_ref.update({metric: job['jobReference']['jobId']})
-                self.query_timexec.update({job['jobReference']['jobId']: 0})
-            # wait until all user's queries are done      
-            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
+        #user = users.get_current_user()         
+        #if user: 
+        # initialize parameters 
+        self.initialization()
+        # insert queries in the jobs queue       
+        for metric, query in queries.list.items():
+            job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
+            logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
+            self.query_ref.update({metric: job['jobReference']['jobId']})
+            self.query_timexec.update({job['jobReference']['jobId']: 0})
+        # wait until all user's queries are done      
+        reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
+        job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
+        i = 0
+        while i <= self.app.config.get('maxIter') and len(set(self.query_ref.values()) - job_done) > 0:
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
             job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
-            i = 0
-            while i <= self.app.config.get('maxIter') and len(set(self.query_ref.values()) - job_done) > 0:
-                reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
-                job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
-                i += 1       
-                
-            '''              
-            variables = {
-                'url': decorator.authorize_url(),
-                'has_credentials': decorator.has_credentials(),
-                'get':get,
-                'visites_item': visites_item,
-                'visitors_item' : visitors_item,
-                'item_bounce':item_bounce,
-                'item_page_visite':item_page_visite,
-                'dealer':dealer,
-                'startDate':startDate,
-                'endDate':endDate,
-                }
+            i += 1          
+        '''              
+        variables = {
+            'url': decorator.authorize_url(),
+            'has_credentials': decorator.has_credentials(),
+            'get':get,
+            'visites_item': visites_item,
+            'visitors_item' : visitors_item,
+            'item_bounce':item_bounce,
+            'item_page_visite':item_page_visite,
+            'dealer':dealer,
+            'startDate':startDate,
+            'endDate':endDate,
+            }
 
-            template = JINJA_ENVIRONMENT.get_template('management.html')
-            self.response.write(template.render(variables))
-            '''   
-                 
-            # calculate time execution for each query
-            for j in reply['jobs']:
-                if j['jobReference']['jobId'] in self.query_ref.values():
-                    self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
-            # add debug information    
-            logging.debug(reply) 
-            logging.debug(self.query_ref)
-            logging.debug(self.query_timexec)
-            out = [metric + ": " + self.get_metric_val(id) + " (" + str(self.query_timexec[id]) + " ms)" for metric, id in self.query_ref.items()]
-            self.response.write(out)
-            
-        else: 
-           self.redirect(users.create_login_url("/"))
+        template = JINJA_ENVIRONMENT.get_template('management.html')
+        self.response.write(template.render(variables))
+        '''             
+        # calculate time execution for each query
+        for j in reply['jobs']:
+            if j['jobReference']['jobId'] in self.query_ref.values():
+                self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
+        # add debug information    
+        logging.debug(reply) 
+        logging.debug(self.query_ref)
+        logging.debug(self.query_timexec)
+        out = [metric + ": " + self.get_metric_val(id) + " (" + str(self.query_timexec[id]) + " ms)" for metric, id in self.query_ref.items()]
+        self.response.write(out)     
+        #else: 
+          # self.redirect(users.create_login_url("/"))
             
 app = webapp2.WSGIApplication(
     [
