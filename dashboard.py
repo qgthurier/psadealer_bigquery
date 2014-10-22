@@ -26,9 +26,7 @@ import cgi
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     autoescape=True,
-    extensions=['jinja2.ext.autoescape'],
-    cache_size=0,
-    auto_reload=True)
+    extensions=['jinja2.ext.autoescape'])
 
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
@@ -115,14 +113,12 @@ class Dashboard(webapp2.RequestHandler):
             job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
             logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
             self.query_ref.update({metric: job['jobReference']['jobId']})
-        """
         # insert tricky queries in the job queue
         query = queries.tricky['new_visitors']
         metric = 'new_visitors'
         job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))).execute()
         logging.debug(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))
         self.query_ref.update({metric: job['jobReference']['jobId']})
-        """
         # wait until all user's queries are done      
         reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
         i = 0
@@ -136,23 +132,7 @@ class Dashboard(webapp2.RequestHandler):
                     self.query_timexec.update({id: long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])})
                     qry = self.query_ref.keys()[self.query_ref.values().index(id)]
                     variable.update({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
-                    #template.generate(qry="* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id))
             i += 1          
-        """    
-        template = JINJA_ENVIRONMENT.get_template('template.html')
-        self.response.write(template.generate(variables)) 
-        # calculate time execution for each query
-        for j in reply['jobs']:
-            if j['jobReference']['jobId'] in self.query_ref.values():
-                self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
-        # add debug information    
-        logging.debug(reply) 
-        logging.debug(self.query_ref)
-        logging.debug(self.query_timexec)
-        out = ["* " + metric + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id) for metric, id in self.query_ref.items()]
-        self.response.write("<pre>" +"\n\n".join(out) + "</pre>")
-        self.response.write(str(variable))
-        """
         self.response.write(template.render(variable))
                     
 app = webapp2.WSGIApplication(
