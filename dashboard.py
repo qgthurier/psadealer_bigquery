@@ -43,6 +43,7 @@ class Dashboard(webapp2.RequestHandler):
         self.bq_service = build('bigquery', 'v2', http=HTTP)
         self.par = self.parse_get_parameters()
         self.query_ref = {}
+        self.query_timexec = {}
         if self.par['source'] == "tables":
             self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
             self.date_condition = ""
