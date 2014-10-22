@@ -26,7 +26,8 @@ import cgi
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     autoescape=True,
-    extensions=['jinja2.ext.autoescape'])
+    extensions=['jinja2.ext.autoescape'],
+    cache_size=0)
 
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
@@ -126,7 +127,7 @@ class Dashboard(webapp2.RequestHandler):
         i = 0
         variable = {}
         template = JINJA_ENVIRONMENT.get_template('template.html')
-        self.response.write(template.render({}))
+        self.response.write(template.render(foo="yo"))
         while i <= MAXITER and len(self.query_ref.values()) > len(self.query_timexec.keys()):
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
             for j in reply['jobs']:
@@ -135,7 +136,7 @@ class Dashboard(webapp2.RequestHandler):
                     self.query_timexec.update({id: long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])})
                     qry = self.query_ref.keys()[self.query_ref.values().index(id)]
                     variable.update({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
-                    template.generate({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
+                    template.generate(qry = "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id))
             i += 1          
         """    
         template = JINJA_ENVIRONMENT.get_template('template.html')
