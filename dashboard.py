@@ -126,6 +126,7 @@ class Dashboard(webapp2.RequestHandler):
         i = 0
         variable = {}
         template = JINJA_ENVIRONMENT.get_template('template.html')
+        self.response.write(template.render({}))
         while i <= MAXITER and len(self.query_ref.values()) > len(self.query_timexec.keys()):
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
             for j in reply['jobs']:
@@ -149,8 +150,8 @@ class Dashboard(webapp2.RequestHandler):
         logging.debug(self.query_timexec)
         out = ["* " + metric + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id) for metric, id in self.query_ref.items()]
         self.response.write("<pre>" +"\n\n".join(out) + "</pre>")
+        self.response.write(str(variable))
         """
-        self.response.write(str(variable))     
             
 app = webapp2.WSGIApplication(
     [
