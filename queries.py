@@ -44,9 +44,13 @@ easy = {
 
 tricky = {
 
-'new_visitors':("select count(fullVisitorId) as newvisitors "
-                "from (select fullVisitorId from (TABLE_DATE_RANGE([87581422.ga_sessions_],TIMESTAMP('%s'),TIMESTAMP('%s'))) group each by fullVisitorId)"
-                "where fullVisitorId not in (select fullVisitorId from (TABLE_DATE_RANGE([87581422.ga_sessions_],DATE_ADD(TIMESTAMP('%s'), -1, 'YEAR'),DATE_ADD(TIMESTAMP('%s'), -1, 'DAY'))) group each by fullVisitorId)")          
-          
+'new_visitors':("select count(l.fullVisitorId) as newvisitors " 
+                    "from " 
+                    "(select fullVisitorId from (TABLE_DATE_RANGE([87581422.ga_sessions_],TIMESTAMP('%s'),TIMESTAMP('%s'))) group each by fullVisitorId)  as l "
+                    "left outer join each "
+                    "(select fullVisitorId from (TABLE_DATE_RANGE([87581422.ga_sessions_],DATE_ADD(TIMESTAMP('%s'), -1, 'YEAR'),DATE_ADD(TIMESTAMP('%s'), -1, 'DAY'))) group each by fullVisitorId) as r "
+                    "on r.fullVisitorId=l.fullVisitorId "
+                    "where r.fullVisitorId is null)")        
+
 }
  
