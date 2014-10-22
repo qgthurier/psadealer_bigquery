@@ -43,7 +43,6 @@ class Dashboard(webapp2.RequestHandler):
         self.bq_service = build('bigquery', 'v2', http=HTTP)
         self.par = self.parse_get_parameters()
         self.query_ref = {}
-        self.query_timexec = {}
         if self.par['source'] == "tables":
             self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
             self.date_condition = ""
@@ -113,40 +112,31 @@ class Dashboard(webapp2.RequestHandler):
             job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
             logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
             self.query_ref.update({metric: job['jobReference']['jobId']})
-            self.query_timexec.update({job['jobReference']['jobId']: 0})
+        """
         # insert tricky queries in the job queue
         query = queries.tricky['new_visitors']
         metric = 'new_visitors'
         job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))).execute()
         logging.debug(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))
         self.query_ref.update({metric: job['jobReference']['jobId']})
-        self.query_timexec.update({job['jobReference']['jobId']: 0})
+        """
         # wait until all user's queries are done      
         reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
-        job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
         i = 0
-        while i <= MAXITER and len(set(self.query_ref.values()) - job_done) > 0:
+        variable = {}
+        while i <= MAXITER and len(self.query_ref.values()) > len(self.query_timexec.keys()):
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
-            job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
+            for j in reply['jobs']:
+                id = j['jobReference']['jobId'] 
+                if id in self.query_ref.values() and j not in self.query_timexec.keys():
+                    self.query_timexec.update({id: long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])})
+                    qry = self.query_ref.keys()[self.query_ref.values().index(id)]
+                    variable.update({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
             i += 1          
-        '''              
-        variables = {
-            'url': decorator.authorize_url(),
-            'has_credentials': decorator.has_credentials(),
-            'get':get,
-            'visites_item': visites_item,
-            'visitors_item' : visitors_item,
-            'item_bounce':item_bounce,
-            'item_page_visite':item_page_visite,
-            'dealer':dealer,
-            'startDate':startDate,
-            'endDate':endDate,
-            }
-
+        """    
         template = JINJA_ENVIRONMENT.get_template('management.html')
-        self.response.write(template.render(variables))
-        '''             
-        # calculate time execution for each quer
+        self.response.write(template.render(variables)) 
+        # calculate time execution for each query
         for j in reply['jobs']:
             if j['jobReference']['jobId'] in self.query_ref.values():
                 self.query_timexec[j['jobReference']['jobId']] = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
@@ -155,7 +145,9 @@ class Dashboard(webapp2.RequestHandler):
         logging.debug(self.query_ref)
         logging.debug(self.query_timexec)
         out = ["* " + metric + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id) for metric, id in self.query_ref.items()]
-        self.response.write("<pre>" +"\n\n".join(out) + "</pre>")     
+        self.response.write("<pre>" +"\n\n".join(out) + "</pre>")
+        """
+        self.response.write(str(variable))     
             
 app = webapp2.WSGIApplication(
     [
