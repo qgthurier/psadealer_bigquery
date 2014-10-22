@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf8 
 
 import codecs
 import httplib2
@@ -108,12 +108,19 @@ class Dashboard(webapp2.RequestHandler):
     def get(self):         
         # initialize parameters 
         self.initialization()
-        # insert queries in the jobs queue       
-        for metric, query in queries.list.items():
+        # insert easy queries in the jobs queue       
+        for metric, query in queries.easy.items():
             job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
             logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
             self.query_ref.update({metric: job['jobReference']['jobId']})
             self.query_timexec.update({job['jobReference']['jobId']: 0})
+        # insert tricky queries in the job queue
+        query = queries.tricky['new_visitors']
+        metric = 'new_visitors'
+        job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))).execute()
+        logging.debug(query % (self.par['startDate_str'], self.par['endDate_str'], self.par['startDate_str'], self.par['startDate_str']))
+        self.query_ref.update({metric: job['jobReference']['jobId']})
+        self.query_timexec.update({job['jobReference']['jobId']: 0})
         # wait until all user's queries are done      
         reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
         job_done = set([j['jobReference']['jobId'] for j in reply['jobs']])
