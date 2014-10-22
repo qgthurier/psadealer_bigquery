@@ -125,6 +125,7 @@ class Dashboard(webapp2.RequestHandler):
         reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
         i = 0
         variable = {}
+        template = JINJA_ENVIRONMENT.get_template('template.html')
         while i <= MAXITER and len(self.query_ref.values()) > len(self.query_timexec.keys()):
             reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
             for j in reply['jobs']:
@@ -133,10 +134,11 @@ class Dashboard(webapp2.RequestHandler):
                     self.query_timexec.update({id: long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])})
                     qry = self.query_ref.keys()[self.query_ref.values().index(id)]
                     variable.update({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
+                    self.response.write(template.generate({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)}))
             i += 1          
         """    
-        template = JINJA_ENVIRONMENT.get_template('management.html')
-        self.response.write(template.render(variables)) 
+        template = JINJA_ENVIRONMENT.get_template('template.html')
+        self.response.write(template.generate(variables)) 
         # calculate time execution for each query
         for j in reply['jobs']:
             if j['jobReference']['jobId'] in self.query_ref.values():
