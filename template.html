@@ -41,8 +41,8 @@ app.controller("Query", function($scope, $http, $attrs) {
 </script>
 
 <body ng-app="MyApp">
-  <div ng-controller="Query">
-    <ul ng-repeat="row in results" ref="global">
+  <div ng-controller="Query" ref="global">
+    <ul ng-repeat="row in results">
       <li>{{row}}</li>
     </ul>
   </div>

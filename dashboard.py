@@ -229,7 +229,7 @@ class Query(webapp2.RequestHandler):
             if job['jobReference']['jobId'] == j['jobReference']['jobId']:
                 query_timexec = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
                 query_val = self.get_query_val(j['jobReference']['jobId'])
-        variable = {time: str(query_timexec), res: query_val}
+        variable = {'time': str(query_timexec), 'res': query_val}
         self.response.headers['Content-Type'] = 'application/json'        
         self.response.out.write(json.dumps(variable))
          
