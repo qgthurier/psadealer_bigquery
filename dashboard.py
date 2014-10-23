@@ -9,6 +9,7 @@ import urllib
 import json
 import bqclient
 import queries
+import json
 
 from datetime import date, timedelta, datetime
 from apiclient.discovery import build
@@ -134,10 +135,104 @@ class Dashboard(webapp2.RequestHandler):
                     variable.update({qry: "* " + qry + " - " + str(self.query_timexec[id]) + " ms * \n\n" + self.get_query_val(id)})
             i += 1          
         self.response.write(template.render(variable))
-                    
+
+class Query(webapp2.RequestHandler):
+    
+    def initialization(self):
+        self.bq_service = build('bigquery', 'v2', http=HTTP)
+        self.par = self.parse_get_parameters()
+        self.query_ref = {}
+        self.query_timexec = {}
+        self.from_statement = "(TABLE_DATE_RANGE([87581422.ga_sessions_], TIMESTAMP('" + self.par['startDate_str'] + "'), TIMESTAMP('" + self.par['endDate_str'] + "')))"
+        self.date_condition = ""        
+        
+    def parse_get_parameters(self):
+        get = cgi.FieldStorage()
+        try:
+          ref = get['ref'].value
+        except:
+          ref = 'global'
+        try:
+          dealer = get['dealer'].value
+        except:
+          dealer = 'ajaccio'
+        try:
+          time_out = get['time_out'].value
+        except:
+          time_out = 100
+        try:  
+          source = get['source'].value
+        except:
+          source = "tables"
+        try:
+          startDate_str = get['startDate'].value
+          startDate = datetime.strptime(startDate_str, '%Y%m%d')
+        except:
+          startDate = datetime.today() - timedelta(30)
+          startDate_str = startDate.strftime('%Y%m%d')
+        try:
+          endDate_str = get['endDate'].value   
+          endDate = datetime.strptime(endDate_str, '%Y%m%d')
+        except:
+          endDate =  datetime.today() - timedelta(1)
+          endDate_str = endDate.strftime('%Y%m%d')
+        return {'dealer': dealer, 'timeout': time_out, 'ref': ref, 
+                    'source':source, 'startDate': startDate, 
+                    'endDate': endDate, 'startDate_str': startDate_str, 'endDate_str': endDate_str} 
+    
+    def make_query_config(self, query):
+        return {'configuration': {'query': {'query': query,'useQueryCache': False}}}
+        
+    def get_metric_timexec(self, id):
+        res = self.bq_service.jobs().get(projectId=BILLING_PROJECT_ID, jobId=id).execute(decorator.http())
+        return str(long(res["statistics"]["endTime"]) - long(res["statistics"]["startTime"]))
+            
+    def get_metric_val(self, id):
+        res = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
+        return [str(r['f'][0]["v"]) for r in res['rows']][0] 
+  
+    def get_query_val(self, id):
+        result = self.bq_service.jobs().getQueryResults(projectId=BILLING_PROJECT_ID, jobId=id).execute()
+        logging.debug(result)
+        UTF8Writer = codecs.getwriter('utf8')
+        if int(result["totalRows"]) > 0:
+            fields = result['schema']['fields']
+            out = "\t".join([field['name'] for field in fields])
+            for row in result['rows']:
+                out += "\n" + "\t".join([row['f'][i]['v'] if row['f'][i]['v'] is not None else "None" for i in xrange(len(fields))])
+        else:
+            out = "no row"
+        return out
+    
+    def get(self):         
+        # initialize parameters 
+        self.initialization()
+        # insert easy queries in the jobs queue
+        metric = self.par['ref']
+        query = queries.easy['metric']      
+        job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
+        logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
+        self.query_ref.update({metric: job['jobReference']['jobId']})
+        # wait until all user's queries are done      
+        reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()        
+        jobs_done = [j['jobReference']['jobId'] for j in reply['jobs']]
+        i = 0
+        while i <= MAXITER and job['jobReference']['jobId'] not in jobs_done:
+            reply = self.bq_service.jobs().list(projectId=BILLING_PROJECT_ID, allUsers=False, stateFilter="done", projection="minimal", fields="jobs(jobReference,statistics)").execute()
+            jobs_done = [j['jobReference']['jobId'] for j in reply['jobs']]
+            i += 1
+        for j in reply['jobs']:
+            if job['jobReference']['jobId'] == j['jobReference']['jobId']:
+                query_timexec = long(j["statistics"]["endTime"]) - long(j["statistics"]["startTime"])
+                query_val = self.get_query_val(j['jobReference']['jobId'])
+        variable = {time: str(query_timexec), res: query_val}
+        self.response.headers['Content-Type'] = 'application/json'        
+        self.response.out.write(json.dumps(variable))
+         
 app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
      ('/timeout', Timeout)
+     ('/query', Query)
     ],
     debug=True)

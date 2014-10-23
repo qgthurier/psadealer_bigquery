@@ -1,13 +1,13 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    {% block head %}
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <link rel="shortcut icon" href="/image/favicon.ico" />
     
-    <title>{% block title %}DnA by NetBooster Management & Reports{% endblock %}</title>
+    <title>Angular.js & BigQuery</title>
     
     <!-- CSS -->
     <link href="/css/reset.css" rel="stylesheet" media="all">
@@ -19,35 +19,38 @@
     
     <!-- css3-mediaqueries.js for IE8 or older -->
     <script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.js"></script>
     
     <!--[if lte IE 8]>
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]--></head>
-    {% endblock %}
 
+<script>
+var app = angular.module("MyApp", []);
 
-<body>   
-<div id="jumbotron">
-{% block jumbotron %}
-<pre>{{ foo }}
-</pre>
-<pre>{{ global }}
-</pre>
-<pre>{{ by_date }}
-</pre>
-<pre>{{ by_medium }}
-</pre>
-<pre>{{ by_device }}
-</pre>
-<pre>{{ by_browser }}
-</pre>
-<pre>{{ by_title }}
-</pre>
-<pre>{{ by_model }}
-</pre>
-<pre>{{ new_visitors }}
-</pre>
-{% endblock %}
-</div>
+app.controller("Query", function($scope, $http, $attrs) {
+  $http.get('http://psa-dna-netbooster.appspot.com/query?ref=' + $attrs.ref + 'dealer=ajaccio&startDate=20141001&endDate=20141021').
+    success(function(data, status, headers, config) {
+      $scope.results = data.res;
+      $scope.timexec = data.time;
+    }).
+    error(function(data, status, headers, config) {
+      // log error
+    });
+});
+</script>
+
+<body ng-app="MyApp">
+  <div ng-controller="Query">
+    <ul ng-repeat="row in results" ref="global">
+      <li>{{row}}</li>
+    </ul>
+  </div>
+  <div ng-controller="Query" ref="by_medium">
+    <ul ng-repeat="row in results">
+      <li>{{row}}</li>
+    </ul>
+  </div>
 </body>
+
 </html>
