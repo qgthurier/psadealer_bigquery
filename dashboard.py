@@ -213,7 +213,7 @@ class Query(webapp2.RequestHandler):
         self.initialization()
         # insert easy queries in the jobs queue
         metric = self.par['ref']
-        query = queries.easy['metric']      
+        query = queries.easy[metric]      
         job = self.bq_service.jobs().insert(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (self.from_statement, self.par['dealer'], self.date_condition))).execute()
         logging.debug(query % (self.from_statement, self.par['dealer'], self.date_condition))
         self.query_ref.update({metric: job['jobReference']['jobId']})
