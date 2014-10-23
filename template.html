@@ -29,7 +29,7 @@
 var app = angular.module("MyApp", []);
 
 app.controller("Query", function($scope, $http, $attrs) {
-  $http.get('http://psa-dna-netbooster.appspot.com/query?ref=' + $attrs.ref + '&dealer=ajaccio&startDate=20141001&endDate=20141021').
+  $http.get('http://psa-dna-netbooster.appspot.com/query?ref=' + $attrs.ref + '&' + window.location.search.substr(1)).
     success(function(data, status, headers, config) {
       $scope.results = data.res;
       $scope.timexec = data.time;
@@ -43,14 +43,37 @@ app.controller("Query", function($scope, $http, $attrs) {
 <body ng-app="MyApp">
   <div ng-controller="Query" ref="global">
     <ul>
-      <li>{{results}}</li>
-      <li>{{timexec}}</li>
+      <li>global: {{timexec}}</li>
     </ul>
   </div>
-  <div ng-controller="Query" ref="by_medium">
+  <div ng-controller="Query" ref="by_date">
     <ul>
-      <li>{{results}}</li>
-      <li>{{timexec}}</li>
+      <li>global: {{timexec}}</li>
+    </ul>
+  </div>
+    <div ng-controller="Query" ref="by_medium">
+    <ul>
+      <li>by_medium: {{timexec}}</li>
+    </ul>
+  </div>
+    <div ng-controller="Query" ref="by_device">
+    <ul>
+      <li>by_device: {{timexec}}</li>
+    </ul>
+  </div>
+    <div ng-controller="Query" ref="by_browser">
+    <ul>
+      <li>by_browser: {{timexec}}</li>
+    </ul>
+  </div>
+    <div ng-controller="Query" ref="by_title">
+    <ul>
+      <li>by_title: {{timexec}}</li>
+    </ul>
+  </div>
+  <div ng-controller="Query" ref="by_model">
+    <ul>
+      <li>by_model {{timexec}}</li>
     </ul>
   </div>
 </body>
