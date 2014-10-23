@@ -20,7 +20,7 @@ handlers:
 - url: /fonts
   static_dir: fonts
 
-- url: /dashboard
+- url: /query
   script: dashboard.app
 
 - url: /template.html

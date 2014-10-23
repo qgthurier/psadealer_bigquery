@@ -29,7 +29,7 @@
 var app = angular.module("MyApp", []);
 
 app.controller("Query", function($scope, $http, $attrs) {
-  $http.get('http://psa-dna-netbooster.appspot.com/query?ref=' + $attrs.ref + 'dealer=ajaccio&startDate=20141001&endDate=20141021').
+  $http.get('http://psa-dna-netbooster.appspot.com/query?ref=' + $attrs.ref + '&dealer=ajaccio&startDate=20141001&endDate=20141021').
     success(function(data, status, headers, config) {
       $scope.results = data.res;
       $scope.timexec = data.time;
