@@ -232,7 +232,7 @@ class Query(webapp2.RequestHandler):
 app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
-     ('/timeout', Timeout)
+     ('/timeout', Timeout),
      ('/query', Query)
     ],
     debug=True)
