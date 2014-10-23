@@ -8,9 +8,6 @@ builtins:
 - remote_api: on
 
 handlers:
-- url: /template\.html
-  script: template.html
-
 - url: /image
   static_dir: image
 
@@ -25,6 +22,10 @@ handlers:
 
 - url: /.*
   script: dashboard.app
+
+- url: /template
+  static_files: template.html
+  upload: template.html
 
 - url: /users
   static_dir: users

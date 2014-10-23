@@ -36,8 +36,12 @@ MAXITER = 50
 
 class Timeout(webapp2.RequestHandler):
     def get(self):
+        self.redirect('/template.html')
+
+class Angular(webapp2.RequestHandler):
+    def get(self):
         self.response.write("at least one query has reached the time out !")
-               
+                      
 class Dashboard(webapp2.RequestHandler):
     
     def initialization(self):
@@ -233,6 +237,7 @@ app = webapp2.WSGIApplication(
     [
      ('/', Dashboard),
      ('/timeout', Timeout),
-     ('/query', Query)
+     ('/query', Query),
+     ('/angular', Angular)
     ],
     debug=True)
