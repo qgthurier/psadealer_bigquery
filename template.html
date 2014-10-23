@@ -42,13 +42,15 @@ app.controller("Query", function($scope, $http, $attrs) {
 
 <body ng-app="MyApp">
   <div ng-controller="Query" ref="global">
-    <ul ng-repeat="row in results">
-      <li>{{row}}</li>
+    <ul>
+      <li>{{results}}</li>
+      <li>{{timexec}}</li>
     </ul>
   </div>
   <div ng-controller="Query" ref="by_medium">
-    <ul ng-repeat="row in results">
-      <li>{{row}}</li>
+    <ul>
+      <li>{{results}}</li>
+      <li>{{timexec}}</li>
     </ul>
   </div>
 </body>
