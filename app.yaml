@@ -20,10 +20,10 @@ handlers:
 - url: /fonts
   static_dir: fonts
 
-- url: /.*
+- url: /dashboard
   script: dashboard.app
 
-- url: /template
+- url: /template.html
   static_files: template.html
   upload: template.html
 
