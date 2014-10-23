@@ -27,7 +27,7 @@ easy = {
                    "where lower(trafficSource.referralPath) contains '%s' %s "
                    "group by browser"),
 
-'by_title':("select hits.page.pageTitle as pagetitle, count(hits.eventInfo.eventCategory) as eventcat, sum(totals.pageviews) as sumpageviews "
+'by_title':("select count(hits.eventInfo.eventCategory) as eventcat, sum(totals.pageviews) as sumpageviews, hits.page.pageTitle as pagetitle "
                    "from %s "
                    "where lower(trafficSource.referralPath) contains '%s' %s "
                    "group by pageTitle"),
