@@ -1,7 +1,6 @@
 import endpoints
 import httplib2
 import sql_queries
-import logging
 
 from protorpc import messages
 from protorpc import message_types
