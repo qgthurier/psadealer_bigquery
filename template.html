@@ -52,7 +52,17 @@ function userAuthed() {
     }
   });
 }
+
+function auth() {
+  signin(false, userAuthed);
+};
 </script>
+
+<body>
+<a href="#" onclick="auth();" id="signinButton">Sign in!</a>
+</body>
+
+
     
     <!--[if lte IE 8]>
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
