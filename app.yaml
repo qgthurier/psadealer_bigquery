@@ -23,7 +23,7 @@ handlers:
 - url: /query
   script: dashboard.app
 
-- url: /template.html
+- url: /template.html*
   static_files: template.html
   upload: template.html
 
