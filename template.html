@@ -47,7 +47,7 @@ function userAuthed() {
   var request =
       gapi.client.oauth2.userinfo.get().execute(function(resp) {
     if (!resp.code) {
-      // User is signed in, call my Endpoint
+      gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
     }
   });
 }
