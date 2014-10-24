@@ -26,13 +26,13 @@
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]--></head>
 
+
 <script>
-</script>
 init(){
 var api = 'https://psa-dna-netbooster.appspot.com/_ah/api';
 gapi.client.load('uapsadata', 'v1', function() {console.log("api loaded");}, api);
 }
-<script>
+
 var app = angular.module("MyApp", []);
 
 app.controller("Query", function($scope, $http, $attrs) {
