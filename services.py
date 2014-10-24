@@ -1,6 +1,7 @@
 import endpoints
 import httplib2
 import sql_queries
+import logging
 
 from protorpc import messages
 from protorpc import message_types
@@ -53,6 +54,7 @@ class PsaBqApi(remote.Service):
     def query(self, request):
         query = sql_queries.easy[request.ref]      
         job = self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute()
+        loggin.debug(self.bq_service)
         return Response(time=self.get_query_timexec(job['jobReference']['jobId']), res=self.parse_query_result(job))
           
 application = endpoints.api_server([PsaBqApi])
