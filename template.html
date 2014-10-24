@@ -33,7 +33,7 @@ function init() {
 
   apisToLoad = 2; // must match number of calls to gapi.client.load()
   apiRoot = '//' + window.location.host + '/_ah/api';
-  gapi.client.load('tictactoe', 'v1', loadCallback, apiRoot);
+  gapi.client.load('uapsadata', 'v1', loadCallback, apiRoot);
   gapi.client.load('oauth2', 'v2', loadCallback);
 }
 
@@ -47,6 +47,7 @@ function userAuthed() {
   var request =
       gapi.client.oauth2.userinfo.get().execute(function(resp) {
     if (!resp.code) {
+      console.log("test");
       gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
     }
   });
