@@ -44,13 +44,8 @@ function signin(mode, authorizeCallback) {
 }
 
 function userAuthed() {
-  var request =
-      gapi.client.oauth2.userinfo.get().execute(function(resp) {
-    if (!resp.code) {
-      console.log("test");
-      gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
-    }
-  });
+  console.log("test");
+  var request = gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
 }
 
 function auth() {
