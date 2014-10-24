@@ -15,6 +15,8 @@ SCOPE = 'https://www.googleapis.com/auth/bigquery'
 HTTP = AppAssertionCredentials(scope=SCOPE).authorize(httplib2.Http())
 TIMEOUT = 10
 
+# https://psa-dna-netbooster.appspot.com/_ah/api/uapsadata/v1/query?ref=global&dealer=abc&startDate=20140930&endDate=20141002
+
 class Response(messages.Message):
     timexec = messages.StringField(1)
     res = messages.StringField(2)
@@ -43,7 +45,8 @@ class PsaBqApi(remote.Service):
     def query(self, request):
         query = sql_queries.easy[request.ref]      
         result = (self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute())
-        timexec = str(long(result["statistics"]["endTime"]) - long(result["statistics"]["startTime"]))
+        #timexec = str(long(result["statistics"]["endTime"]) - long(result["statistics"]["startTime"]))
+        timexec = 0
         logging.debug(request.endDate)
         values = [str(r['f'][0]["v"]) for r in result['rows']][0]
         return Response(time=timexec, res=values)
