@@ -47,7 +47,7 @@ class PsaBqApi(remote.Service):
         result = (self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute())
         #timexec = str(long(result["statistics"]["endTime"]) - long(result["statistics"]["startTime"]))
         logging.debug(result)
-        timexec = 0
+        timexec = str(0)
         values = [str(r['f'][0]["v"]) for r in result['rows']][0]
         return Response(time=timexec, res=values)
           
