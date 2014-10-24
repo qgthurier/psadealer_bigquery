@@ -23,7 +23,7 @@
     
     
     <script>
-	function googleOnLoadCallback(){  
+	function init(){  
 		    var apisToLoad = 1; // must match number of calls to gapi.client.load()  
 		    var gCallback = function() {  
 		        if (--apisToLoad == 0) {  
@@ -43,18 +43,7 @@
 
 <body>
 
-
 <script>
-var app = angular.module("MyApp", []);
-app.controller("Query", function($scope, $http, $attrs) {
-    console.log("controller call");
-	gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
-});
-</script>
-<!-- gqgqgfq -->
-
-
-<!-- <script>
 var app = angular.module("MyApp", []);
 
 app.controller("Query", function($scope, $http, $attrs) {
@@ -67,7 +56,7 @@ app.controller("Query", function($scope, $http, $attrs) {
       // log error
     });
 });
-</script> -->
+</script>
 
 <!--  <body ng-app="MyApp"> -->
 <body>
