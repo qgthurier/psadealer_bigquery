@@ -13,7 +13,7 @@ from apiclient.discovery import build
 BILLING_PROJECT_ID = "282649517306"
 SCOPE = 'https://www.googleapis.com/auth/bigquery'
 HTTP = AppAssertionCredentials(scope=SCOPE).authorize(httplib2.Http())
-TIMEOUT = 10
+TIMEOUT = 10000
 
 # https://psa-dna-netbooster.appspot.com/_ah/api/uapsadata/v1/query?ref=global&dealer=abc&startDate=20140930&endDate=20141002
 
