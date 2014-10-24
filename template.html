@@ -20,6 +20,14 @@
     <!-- css3-mediaqueries.js for IE8 or older -->
     <script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.js"></script>
+    
+    <script>
+		function init() {
+			console.log("initialization");
+			var api = 'https://psa-dna-netbooster.appspot.com/_ah/api';
+			gapi.client.load('uapsadata', 'v1', function() {console.log("api loaded");}, api);
+		}
+	</script>
     <script src="https://apis.google.com/js/client.js?onload=init"></script>
     
     <!--[if lte IE 8]>
@@ -27,13 +35,7 @@
     <![endif]--></head>
 
 
-<script>
-function init() {
-	console.log("initialization");
-	var api = 'https://psa-dna-netbooster.appspot.com/_ah/api';
-	gapi.client.load('uapsadata', 'v1', function() {console.log("api loaded");}, api);
-}
-</script>
+
 
 <script>
 var app = angular.module("MyApp", []);
