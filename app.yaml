@@ -31,8 +31,13 @@ handlers:
   static_dir: users
   application_readable: true
 
+- url: /_ah/spi/.*
+  script: services.application
+  
 libraries:
 - name: jinja2
   version: "latest"
 - name: webapp2
   version: "latest"
+- name: endpoints
+  version: 1.0
