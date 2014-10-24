@@ -26,11 +26,6 @@ class Request(messages.Message):
     dealer = messages.StringField(2, required=True)
     startDate = messages.StringField(3, required=True) 
     endDate = messages.StringField(4, required=True)
-
-CONTAINER = endpoints.ResourceContainer(Request, 
-                                        ref = messages.StringField(1, required=True))#,
-                                        #startDate = messages.StringField(2, required=True),
-                                        #endDate = messages.StringField(3, required=True))
   
 @endpoints.api(name='uapsadata', version='v1', description='Return data from psa ua bq export')
 class PsaBqApi(remote.Service):
@@ -41,14 +36,24 @@ class PsaBqApi(remote.Service):
     def make_query_config(self, query):
         return {'query': query, 'timeoutMs': TIMEOUT, 'useQueryCache': False}
     
+    def parse_query_result(self, result):
+        if int(result["totalRows"]) > 0:
+            fields = result['schema']['fields']
+            out = "\t".join([field['name'] for field in fields])
+            for row in result['rows']:
+                out += "\n" + "\t".join([row['f'][i]['v'] if row['f'][i]['v'] is not None else "None" for i in xrange(len(fields))])
+        else:
+            out = "no row"
+        return out
+    
+    def get_query_timexec(self, id):
+        res = self.bq_service.jobs().get(projectId=BILLING_PROJECT_ID, jobId=id).execute()
+        return str(long(res["statistics"]["endTime"]) - long(res["statistics"]["startTime"]))
+    
     @endpoints.method(Request, Response, http_method='GET')
     def query(self, request):
         query = sql_queries.easy[request.ref]      
-        result = (self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute())
-        #timexec = str(long(result["statistics"]["endTime"]) - long(result["statistics"]["startTime"]))
-        logging.debug(result)
-        timexec = str(0)
-        values = [str(r['f'][0]["v"]) for r in result['rows']][0]
-        return Response(time=timexec, res=values)
+        job = self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute()
+        return Response(time=self.get_query_timexec(job['jobReference']['jobId']), res=self.parse_query_result(job))
           
 application = endpoints.api_server([PsaBqApi])
