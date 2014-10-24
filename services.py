@@ -18,7 +18,7 @@ TIMEOUT = 10000
 # https://psa-dna-netbooster.appspot.com/_ah/api/uapsadata/v1/query?ref=global&dealer=abc&startDate=20140930&endDate=20141002
 
 class Response(messages.Message):
-    timexec = messages.StringField(1)
+    time = messages.StringField(1)
     res = messages.StringField(2)
     
 class Request(messages.Message):
@@ -48,7 +48,6 @@ class PsaBqApi(remote.Service):
         #timexec = str(long(result["statistics"]["endTime"]) - long(result["statistics"]["startTime"]))
         logging.debug(result)
         timexec = 0
-        logging.debug(request.endDate)
         values = [str(r['f'][0]["v"]) for r in result['rows']][0]
         return Response(time=timexec, res=values)
           
