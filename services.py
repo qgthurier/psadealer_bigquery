@@ -54,7 +54,7 @@ class PsaBqApi(remote.Service):
     def query(self, request):
         query = sql_queries.easy[request.ref]      
         job = self.bq_service.jobs().query(projectId=BILLING_PROJECT_ID, body=self.make_query_config(query % (request.startDate, request.endDate, request.dealer))).execute()
-        loggin.debug(self.bq_service)
+        logging.debug(self.bq_service)
         if job['jobComplete']:
             return Response(time=self.get_query_timexec(job['jobReference']['jobId']), res=self.parse_query_result(job))
         else:
