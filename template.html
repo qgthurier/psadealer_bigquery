@@ -38,8 +38,8 @@ function init() {
 }
 
 function signin(mode, authorizeCallback) {
-  gapi.auth.authorize({client_id: CLIENT_ID,
-    scope: SCOPES, immediate: mode},
+  gapi.auth.authorize({client_id: "282649517306",
+    scope: ['https://www.googleapis.com/auth/bigquery', 'https://www.googleapis.com/auth/userinfo.email'], immediate: mode},
     authorizeCallback);
 }
 
