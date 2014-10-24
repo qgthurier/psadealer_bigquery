@@ -29,13 +29,16 @@
 
 <script>
 function init() {
-var api = 'https://psa-dna-netbooster.appspot.com/_ah/api';
-gapi.client.load('uapsadata', 'v1', function() {console.log("api loaded");}, api);
+	console.log("initialization");
+	var api = 'https://psa-dna-netbooster.appspot.com/_ah/api';
+	gapi.client.load('uapsadata', 'v1', function() {console.log("api loaded");}, api);
 }
+</script>
 
+<script>
 var app = angular.module("MyApp", []);
-
 app.controller("Query", function($scope, $http, $attrs) {
+    console.log("controller call");
 	gapi.client.uapsadata.get.data({'ref': $attrs.ref, 'startDate': '20140910', 'endDate': '20141003'}).execute(function(resp) {console.log(resp);})
 });
 </script>
